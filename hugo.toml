@@ -33,11 +33,11 @@ canonifyURLs = true
 
   [[params.profileMode.buttons]]
     name = "Posts"
-    url = "/jira-devcode/posts/"
+    url = "/posts/"
 
   [[params.profileMode.buttons]]
     name = "About"
-    url = "/jira-devcode/about/"
+    url = "/about/"
 
 [[params.socialIcons]]
   name = "github"
@@ -59,10 +59,10 @@ canonifyURLs = true
 [menu]
   [[menu.main]]
     name = "Posts"
-    url = "/posts/"
+    url = "/jira-devcode/posts/"
     weight = 10
 
   [[menu.main]]
     name = "About"
-    url = "/about/"
+    url = "/jira-devcode/about/"
     weight = 20
