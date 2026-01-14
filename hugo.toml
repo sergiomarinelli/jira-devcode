@@ -3,6 +3,7 @@ languageCode = "en-us"
 title = "Jira DevCode"
 theme = "PaperMod"
 enableRobotsTXT = true
+canonifyURLs = true
 
 [pagination]
   pagerSize = 10
@@ -20,29 +21,24 @@ enableRobotsTXT = true
   ShowToc = true
   ShowRssButtonInSectionTermList = true
   ShowFullTextinRSS = true
-  assetsDisableFingerprinting = true
-  canonifyURLs = true
 
-
-# ✅ Profile Mode (home tipo landing page dev)
 [params.profileMode]
   enabled = true
   title = "Jira DevCode"
   subtitle = "Automation patterns • JQL • REST APIs • Jira Cloud/JSM by Sérgio Marinelli"
-  imageUrl = "img/avatar.jpeg"
+  imageUrl = "/img/avatar.jpeg"
   imageTitle = "Jira DevCode"
   imageWidth = 140
   imageHeight = 140
 
   [[params.profileMode.buttons]]
     name = "Posts"
-    url = "posts"
+    url = "/posts/"
 
   [[params.profileMode.buttons]]
     name = "About"
-    url = "about"
+    url = "/about/"
 
-# ✅ Social Icons
 [[params.socialIcons]]
   name = "github"
   url = "https://github.com/sergiomarinelli"
@@ -53,6 +49,7 @@ enableRobotsTXT = true
 
 [params.assets]
   favicon = "/favicon.svg"
+  disableFingerprinting = true
 
 [params.label]
   text = "Jira DevCode"
