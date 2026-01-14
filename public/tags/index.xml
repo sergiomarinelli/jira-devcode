@@ -6,42 +6,6 @@
     <description>Recent content in Tags on Jira DevCode</description>
     <generator>Hugo -- 0.151.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 13 Jan 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/jira-devcode/tags/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Api</title>
-      <link>http://localhost:1313/jira-devcode/tags/api/</link>
-      <pubDate>Tue, 13 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/jira-devcode/tags/api/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Automation</title>
-      <link>http://localhost:1313/jira-devcode/tags/automation/</link>
-      <pubDate>Tue, 13 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/jira-devcode/tags/automation/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Jira</title>
-      <link>http://localhost:1313/jira-devcode/tags/jira/</link>
-      <pubDate>Tue, 13 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/jira-devcode/tags/jira/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Jql</title>
-      <link>http://localhost:1313/jira-devcode/tags/jql/</link>
-      <pubDate>Tue, 13 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/jira-devcode/tags/jql/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Jsm</title>
-      <link>http://localhost:1313/jira-devcode/tags/jsm/</link>
-      <pubDate>Tue, 13 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/jira-devcode/tags/jsm/</guid>
-      <description></description>
-    </item>
   </channel>
 </rss>
