@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Jql on Jira DevCode</title>
+    <link>http://localhost:1313/jira-devcode/tags/jql/</link>
+    <description>Recent content in Jql on Jira DevCode</description>
+    <generator>Hugo -- 0.151.2</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 13 Jan 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/jira-devcode/tags/jql/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>JQL &#43; JSON: building reliable Jira automations</title>
+      <link>http://localhost:1313/jira-devcode/posts/jql-json-workflows/</link>
+      <pubDate>Tue, 13 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/jira-devcode/posts/jql-json-workflows/</guid>
+      <description>&lt;p&gt;This post is a starting point for Jira DevCode: patterns, gotchas, and reliable automation design.&lt;/p&gt;
+&lt;h2 id=&#34;what-youll-learn&#34;&gt;What you’ll learn&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;JQL patterns that scale&lt;/li&gt;
+&lt;li&gt;Automation rule architecture&lt;/li&gt;
+&lt;li&gt;REST API workflows (safe retries, idempotency)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;example-jql-baseline&#34;&gt;Example: JQL baseline&lt;/h2&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-jql&#34; data-lang=&#34;jql&#34;&gt;project = ABC AND statusCategory != Done ORDER BY created DESC
+&lt;/code&gt;&lt;/pre&gt;</description>
+      <content:encoded><![CDATA[<p>This post is a starting point for Jira DevCode: patterns, gotchas, and reliable automation design.</p>
+<h2 id="what-youll-learn">What you’ll learn</h2>
+<ul>
+<li>JQL patterns that scale</li>
+<li>Automation rule architecture</li>
+<li>REST API workflows (safe retries, idempotency)</li>
+</ul>
+<h2 id="example-jql-baseline">Example: JQL baseline</h2>
+<pre tabindex="0"><code class="language-jql" data-lang="jql">project = ABC AND statusCategory != Done ORDER BY created DESC
+</code></pre>]]></content:encoded>
+    </item>
+  </channel>
+</rss>

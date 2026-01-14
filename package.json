@@ -1,0 +1,14 @@
+{
+  "name": "jira-devcode",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Jira DevCode - Hugo blog",
+  "scripts": {
+    "dev": "hugo server -D",
+    "build": "hugo --minify",
+    "clean": "rmdir /s /q public resources 2>nul & exit 0"
+  },
+  "devDependencies": {
+    "hugo-extended": "^0.151.2"
+  }
+}

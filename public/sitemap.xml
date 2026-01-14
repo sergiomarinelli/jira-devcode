@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://localhost:1313/jira-devcode/about/</loc>
+    <lastmod>2026-01-13T23:06:31-03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/</loc>
+    <lastmod>2026-01-13T23:06:31-03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/tags/api/</loc>
+    <lastmod>2026-01-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/tags/automation/</loc>
+    <lastmod>2026-01-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/tags/jira/</loc>
+    <lastmod>2026-01-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/tags/jql/</loc>
+    <lastmod>2026-01-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/posts/jql-json-workflows/</loc>
+    <lastmod>2026-01-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/tags/jsm/</loc>
+    <lastmod>2026-01-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/posts/</loc>
+    <lastmod>2026-01-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/tags/</loc>
+    <lastmod>2026-01-13T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/jira-devcode/categories/</loc>
+  </url>
+</urlset>

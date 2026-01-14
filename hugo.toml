@@ -1,0 +1,71 @@
+baseURL = "https://sergiomarinelli.github.io/jira-devcode/"
+languageCode = "en-us"
+title = "Jira DevCode"
+theme = "PaperMod"
+enableRobotsTXT = true
+
+[pagination]
+  pagerSize = 10
+
+[params]
+  env = "production"
+  description = "Dev notes sobre Jira Cloud/JSM, automations, JQL, APIs e integrações."
+  defaultTheme = "auto"
+
+  ShowReadingTime = true
+  ShowShareButtons = true
+  ShowPostNavLinks = true
+  ShowCodeCopyButtons = true
+  ShowBreadCrumbs = true
+  ShowToc = true
+  ShowRssButtonInSectionTermList = true
+  ShowFullTextinRSS = true
+  assetsDisableFingerprinting = true
+  canonifyURLs = true
+
+
+# ✅ Profile Mode (home tipo landing page dev)
+[params.profileMode]
+  enabled = true
+  title = "Jira DevCode"
+  subtitle = "Automation patterns • JQL • REST APIs • Jira Cloud/JSM by Sérgio Marinelli"
+  imageUrl = "img/avatar.jpeg"
+  imageTitle = "Jira DevCode"
+  imageWidth = 140
+  imageHeight = 140
+
+  [[params.profileMode.buttons]]
+    name = "Posts"
+    url = "posts"
+
+  [[params.profileMode.buttons]]
+    name = "About"
+    url = "about"
+
+# ✅ Social Icons
+[[params.socialIcons]]
+  name = "github"
+  url = "https://github.com/sergiomarinelli"
+
+[[params.socialIcons]]
+  name = "linkedin"
+  url = "https://www.linkedin.com/in/s%C3%A9rgio-gabriel-marinelli-59b3a5209/"
+
+[params.assets]
+  favicon = "/favicon.svg"
+
+[params.label]
+  text = "Jira DevCode"
+  icon = "/logo.svg"
+  iconHeight = 28
+
+[menu]
+  [[menu.main]]
+    name = "Posts"
+    url = "/posts/"
+    weight = 10
+
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 20
