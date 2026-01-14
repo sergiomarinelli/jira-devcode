@@ -6,6 +6,49 @@
     <description>Recent content in Tags on Jira DevCode</description>
     <generator>Hugo -- 0.151.2</generator>
     <language>en-us</language>
+    <lastBuildDate>Wed, 14 Jan 2026 00:00:00 -0300</lastBuildDate>
     <atom:link href="http://localhost:1313/jira-devcode/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Entity-Properties</title>
+      <link>http://localhost:1313/jira-devcode/tags/entity-properties/</link>
+      <pubDate>Wed, 14 Jan 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/entity-properties/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Idempotency</title>
+      <link>http://localhost:1313/jira-devcode/tags/idempotency/</link>
+      <pubDate>Wed, 14 Jan 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/idempotency/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Jira-Automation</title>
+      <link>http://localhost:1313/jira-devcode/tags/jira-automation/</link>
+      <pubDate>Wed, 14 Jan 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/jira-automation/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Locks</title>
+      <link>http://localhost:1313/jira-devcode/tags/locks/</link>
+      <pubDate>Wed, 14 Jan 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/locks/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Patterns</title>
+      <link>http://localhost:1313/jira-devcode/tags/patterns/</link>
+      <pubDate>Wed, 14 Jan 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/patterns/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Rest-Api</title>
+      <link>http://localhost:1313/jira-devcode/tags/rest-api/</link>
+      <pubDate>Wed, 14 Jan 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/rest-api/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

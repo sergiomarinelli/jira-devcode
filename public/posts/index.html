@@ -129,12 +129,12 @@
         </div>
         <ul id="menu">
             <li>
-                <a href="http://localhost:1313/posts/" title="Posts">
-                    <span>Posts</span>
+                <a href="http://localhost:1313/jira-devcode/posts/" title="Posts">
+                    <span class="active">Posts</span>
                 </a>
             </li>
             <li>
-                <a href="http://localhost:1313/about/" title="About">
+                <a href="http://localhost:1313/jira-devcode/about/" title="About">
                     <span>About</span>
                 </a>
             </li>
@@ -155,6 +155,22 @@
     </a>
   </h1>
 </header>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Entity Properties in Jira Automation: Idempotency, Locks, and Wait-for-API Patterns
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Manual triggers plus web requests are a perfect recipe for duplicate executions.
+People click the rule twice. Two admins run it “just to be sure”. Or two automations race and you end up with duplicated comments, repeated API calls, or inconsistent data.
+This article shows production-friendly patterns using Entity Properties as a lightweight state store to implement:
+Idempotency: the same operation will not run twice for the same issue Per-issue locks: only one execution at a time per issue Async orchestration: start an API job now, finish it later safely Safe retries: retry only when needed, without duplicating side effects Entity properties are key/value JSON metadata stored on Jira entities. Automation can write and read them and use them in conditions.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-01-14 00:00:00 -0300 -03'>January 14, 2026</span>&nbsp;·&nbsp;<span>5 min</span></footer>
+  <a class="entry-link" aria-label="post link to Entity Properties in Jira Automation: Idempotency, Locks, and Wait-for-API Patterns" href="http://localhost:1313/jira-devcode/posts/entity-properties-automation/"></a>
+</article>
     </main>
     
 <footer class="footer">

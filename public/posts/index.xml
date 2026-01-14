@@ -6,6 +6,240 @@
     <description>Recent content in Posts on Jira DevCode</description>
     <generator>Hugo -- 0.151.2</generator>
     <language>en-us</language>
+    <lastBuildDate>Wed, 14 Jan 2026 00:00:00 -0300</lastBuildDate>
     <atom:link href="http://localhost:1313/jira-devcode/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Entity Properties in Jira Automation: Idempotency, Locks, and Wait-for-API Patterns</title>
+      <link>http://localhost:1313/jira-devcode/posts/entity-properties-automation/</link>
+      <pubDate>Wed, 14 Jan 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/posts/entity-properties-automation/</guid>
+      <description>&lt;p&gt;Manual triggers plus web requests are a perfect recipe for duplicate executions.&lt;/p&gt;
+&lt;p&gt;People click the rule twice. Two admins run it &amp;ldquo;just to be sure&amp;rdquo;. Or two automations race and you end up with duplicated comments, repeated API calls, or inconsistent data.&lt;/p&gt;
+&lt;p&gt;This article shows production-friendly patterns using Entity Properties as a lightweight state store to implement:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Idempotency&lt;/strong&gt;: the same operation will not run twice for the same issue&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Per-issue locks&lt;/strong&gt;: only one execution at a time per issue&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Async orchestration&lt;/strong&gt;: start an API job now, finish it later safely&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Safe retries&lt;/strong&gt;: retry only when needed, without duplicating side effects&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Entity properties are key/value JSON metadata stored on Jira entities. Automation can write and read them and use them in conditions.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Manual triggers plus web requests are a perfect recipe for duplicate executions.</p>
+<p>People click the rule twice. Two admins run it &ldquo;just to be sure&rdquo;. Or two automations race and you end up with duplicated comments, repeated API calls, or inconsistent data.</p>
+<p>This article shows production-friendly patterns using Entity Properties as a lightweight state store to implement:</p>
+<ul>
+<li><strong>Idempotency</strong>: the same operation will not run twice for the same issue</li>
+<li><strong>Per-issue locks</strong>: only one execution at a time per issue</li>
+<li><strong>Async orchestration</strong>: start an API job now, finish it later safely</li>
+<li><strong>Safe retries</strong>: retry only when needed, without duplicating side effects</li>
+</ul>
+<p>Entity properties are key/value JSON metadata stored on Jira entities. Automation can write and read them and use them in conditions.</p>
+<hr>
+<h2 id="what-are-entity-properties">What are Entity Properties</h2>
+<p>Entity properties are JSON blobs stored against Jira entities like issues, projects, and users. In Automation rules, you can:</p>
+<ul>
+<li>Set them via <strong>Set entity property</strong></li>
+<li>Read them using smart values like <code>{{issue.properties.myKey}}</code></li>
+</ul>
+<p>Think of them as a small state record attached to the issue.</p>
+<hr>
+<h2 id="the-core-idea-store-state-on-the-issue">The core idea: store state on the issue</h2>
+<p>Most automation bugs come from not knowing the state of a previous run. Fix that by storing explicit state.</p>
+<p>Example JSON stored per issue:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;running&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;runId&#34;</span>: <span style="color:#e6db74">&#34;rule-123-exec-456&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;startedAt&#34;</span>: <span style="color:#e6db74">&#34;2026-01-14T03:00:00Z&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;attempts&#34;</span>: <span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;lastError&#34;</span>: <span style="color:#66d9ef">null</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Every run should answer:</p>
+<ul>
+<li>Is something already running? (lock)</li>
+<li>Did we already complete? (idempotency)</li>
+<li>If failed, should we retry? (retry policy)</li>
+<li>If running, is it stale? (timeout / takeover)</li>
+</ul>
+<hr>
+<h2 id="pattern-1-manual-trigger-anti-duplication-per-issue-lock">Pattern 1: Manual trigger anti-duplication (per-issue lock)</h2>
+<p><strong>Goal:</strong> if the rule is clicked twice, the second execution exits immediately.</p>
+<h3 id="property-key">Property key</h3>
+<p>Use something predictable, for example:</p>
+<ul>
+<li><code>automation.lock.manualSync</code></li>
+</ul>
+<h3 id="rule-flow">Rule flow</h3>
+<ol>
+<li>
+<p><strong>Trigger:</strong> Manual trigger</p>
+</li>
+<li>
+<p><strong>Condition (Advanced compare):</strong> lock is empty</p>
+</li>
+</ol>
+<ul>
+<li>First value: <code>{{issue.properties.automation.lock.manualSync}}</code></li>
+<li>Condition: <strong>is empty</strong></li>
+</ul>
+<ol start="3">
+<li><strong>Action:</strong> Set entity property (create lock)</li>
+</ol>
+<ul>
+<li>Entity: Issue</li>
+<li>Property key: <code>automation.lock.manualSync</code></li>
+<li>Value:</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;running&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;runId&#34;</span>: <span style="color:#e6db74">&#34;{{rule.id}}-{{executionId}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;startedAt&#34;</span>: <span style="color:#e6db74">&#34;{{now}}&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ol start="4">
+<li>
+<p><strong>Do your work</strong> (edits, transitions, web requests)</p>
+</li>
+<li>
+<p><strong>Release lock</strong> (mark done)<br>
+Set the same property to:</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;done&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;runId&#34;</span>: <span style="color:#e6db74">&#34;{{rule.id}}-{{executionId}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;finishedAt&#34;</span>: <span style="color:#e6db74">&#34;{{now}}&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><strong>Why it works:</strong> the first execution sets a flag; parallel executions see the flag and stop.</p>
+<hr>
+<h2 id="pattern-2-idempotency-key-do-not-repeat-side-effects">Pattern 2: Idempotency key (do not repeat side effects)</h2>
+<p>Locks prevent concurrency. Idempotency prevents repeating the same operation later, even if the lock is cleared.</p>
+<p>Use this for operations that must happen exactly once per issue, like:</p>
+<ul>
+<li>creating something in an external system</li>
+<li>provisioning a resource/account</li>
+<li>calling a &ldquo;create&rdquo; endpoint</li>
+</ul>
+<h3 id="property-key-1">Property key</h3>
+<ul>
+<li><code>automation.idempotency.createExternal</code></li>
+</ul>
+<h3 id="flow">Flow</h3>
+<ol>
+<li><strong>If</strong> <code>{{issue.properties.automation.idempotency.createExternal}}</code> is <strong>not empty</strong> → <strong>Stop rule</strong></li>
+<li>Else → perform the operation</li>
+<li>Set the property to remember completion:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;done&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;doneAt&#34;</span>: <span style="color:#e6db74">&#34;{{now}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;by&#34;</span>: <span style="color:#e6db74">&#34;{{initiator.accountId}}&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="tip-align-with-external-idempotency-if-available">Tip: align with external idempotency (if available)</h3>
+<p>If your API supports idempotency headers, send a stable key like:</p>
+<ul>
+<li><code>{{issue.key}}:createExternal</code></li>
+</ul>
+<p>That way, even if Jira retries, the external system will not create duplicates.</p>
+<hr>
+<h2 id="pattern-3-wait-for-api-without-duplicating-calls-async-orchestration">Pattern 3: Wait-for-API without duplicating calls (async orchestration)</h2>
+<p>Many APIs are not truly synchronous:</p>
+<ul>
+<li><code>POST /jobs</code> returns immediately with a <code>jobId</code></li>
+<li>later you poll <code>GET /jobs/{jobId}</code> until status becomes <code>DONE</code></li>
+</ul>
+<p>A safe approach is two-step orchestration: <strong>Starter rule</strong> + <strong>Poller rule</strong>.</p>
+<h3 id="step-a-starter-rule-create-job-once">Step A: Starter rule (create job once)</h3>
+<ul>
+<li><strong>Trigger:</strong> manual trigger or issue event</li>
+<li><strong>Guards:</strong> lock + idempotency (Patterns 1 and 2)</li>
+<li><strong>Action:</strong> Send web request to create the job</li>
+</ul>
+<p>Store the job id:</p>
+<p>Property key: <code>automation.job.externalSync</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;started&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;jobId&#34;</span>: <span style="color:#e6db74">&#34;{{webResponse.body.jobId}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;startedAt&#34;</span>: <span style="color:#e6db74">&#34;{{now}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;attempts&#34;</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Optionally: add a comment or set a field like &ldquo;Sync status = Running&rdquo;.</p>
+<h3 id="step-b-poller-rule-continue-later">Step B: Poller rule (continue later)</h3>
+<p>Trigger options:</p>
+<ul>
+<li><strong>Scheduled rule</strong> every X minutes + JQL filter</li>
+<li>Or a rule triggered by a field change if you prefer controlling it via a custom field</li>
+</ul>
+<p><strong>JQL idea:</strong> only issues with a running job</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>issue.property[automation.job.externalSync].status = &#34;started&#34;
+</span></span></code></pre></div><p>Then:</p>
+<ul>
+<li>Send web request: <code>GET /jobs/{{issue.properties.automation.job.externalSync.jobId}}</code></li>
+<li>If status == DONE → update issue and mark property as done</li>
+<li>If status == FAILED → store error and decide whether to retry</li>
+<li>If still running → do nothing and let the schedule run again</li>
+</ul>
+<p>Mark completed:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;done&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;jobId&#34;</span>: <span style="color:#e6db74">&#34;{{issue.properties.automation.job.externalSync.jobId}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;finishedAt&#34;</span>: <span style="color:#e6db74">&#34;{{now}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;result&#34;</span>: <span style="color:#e6db74">&#34;{{webResponse.body.result}}&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Mark failed:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;failed&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;jobId&#34;</span>: <span style="color:#e6db74">&#34;{{issue.properties.automation.job.externalSync.jobId}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;failedAt&#34;</span>: <span style="color:#e6db74">&#34;{{now}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;lastError&#34;</span>: <span style="color:#e6db74">&#34;{{webResponse.status}} - {{webResponse.body}}&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><hr>
+<h2 id="pattern-4-stale-lock-takeover-avoid-being-stuck-forever">Pattern 4: Stale lock takeover (avoid being stuck forever)</h2>
+<p>Runs can crash or time out, leaving a lock in <code>running</code> forever.</p>
+<p>Add a timeout policy:</p>
+<ul>
+<li>If lock is older than (for example) 10 minutes, consider it stale and allow takeover.</li>
+</ul>
+<p>Store a timestamp in the lock (Pattern 1 already does). Then add logic at the start:</p>
+<ul>
+<li>If lock is empty → proceed</li>
+<li>Else if lock is running and stale → overwrite lock and proceed</li>
+<li>Else → stop</li>
+</ul>
+<p><strong>Pragmatic tip:</strong> keep your stale timeout conservative. Most teams start with 10 to 30 minutes.</p>
+<hr>
+<h2 id="pattern-5-safe-retries-with-an-attempts-counter">Pattern 5: Safe retries with an attempts counter</h2>
+<p>Retries are dangerous when the operation has side effects. Make retries explicit:</p>
+<p>Property key: <code>automation.retry.externalSync</code></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;failed&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;attempts&#34;</span>: <span style="color:#ae81ff">2</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;lastAttemptAt&#34;</span>: <span style="color:#e6db74">&#34;{{now}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;lastStatus&#34;</span>: <span style="color:#ae81ff">502</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Retry policy example:</p>
+<ul>
+<li>If attempts &gt;= 3 → stop and notify</li>
+<li>If lastStatus is 429/502/503/504 → retry</li>
+<li>Otherwise → stop and require manual intervention</li>
+</ul>
+<hr>
+<h2 id="naming-convention-that-scales">Naming convention that scales</h2>
+<p>Keep keys predictable and searchable:</p>
+<ul>
+<li><code>automation.lock.&lt;ruleKey&gt;</code></li>
+<li><code>automation.idempotency.&lt;operation&gt;</code></li>
+<li><code>automation.job.&lt;integrationName&gt;</code></li>
+<li><code>automation.retry.&lt;operation&gt;</code></li>
+</ul>
+<hr>
+<h2 id="quick-checklist-before-you-ship">Quick checklist before you ship</h2>
+<ul>
+<li>Does the rule exit safely if triggered twice?</li>
+<li>Does it avoid repeating create operations?</li>
+<li>Are failures stored somewhere (property, comment, field)?</li>
+<li>Is there a stale timeout to avoid stuck locks?</li>
+<li>Do retries have a cap?</li>
+</ul>
+<p>If you implement just Pattern 1 (lock) and Pattern 2 (idempotency), you already eliminate most duplicate execution pain.</p>
+]]></content:encoded>
+    </item>
   </channel>
 </rss>
