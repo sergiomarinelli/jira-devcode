@@ -4,7 +4,7 @@ date: 2026-01-13T23:08:31-03:00
 draft: false
 ---
 
-Hi, I’m Sérgio 👋 — a former developer turned Jira & Jira Service Management specialist.
+Hi, I’m Sérgio a former developer turned Jira Cloud specialist.
 
 **Jira DevCode** is my corner of the internet to share *engineering-grade* Jira knowledge: the kind you build after years of creating workflows, automations, and integrations that need to survive real-world chaos.
 
@@ -33,4 +33,4 @@ If you’re a Jira admin, service management specialist, analyst, or developer w
 ## Community-first
 My goal is simple: help more people build Jira setups that are **cleaner, safer, and easier to evolve** — and make advanced Jira knowledge more accessible.
 
-If you want to collaborate, suggest topics, or just say hi, feel free to reach out on GitHub or LinkedIn. 🚀
+If you want to collaborate, suggest topics, or just say hi, feel free to reach out on GitHub or LinkedIn.
