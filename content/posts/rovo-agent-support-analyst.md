@@ -31,7 +31,7 @@ What success looks like:
 
 ---
 
-## (NEW) What Rovo changes in practice
+## What Rovo changes in practice
 
 - **Before:** N1 escalates quickly → Dev asks for missing data → ticket bounces back.
 - **After:** N1 gets a structured checklist, links to playbook pages, and similar-ticket clues **before** escalation.
@@ -160,7 +160,7 @@ Objective criterion: … → Suggested team: …
 
 ---
 
-## (NEW) Automation wiring example
+## Automation wiring example
 
 A simple flow:
 
@@ -173,7 +173,7 @@ Tip: Also store the response in a custom field (optional) for reporting.
 
 ---
 
-## (NEW) What a “good” agent response looks like
+## What a “good” agent response looks like
 
 - 1-sentence summary
 - Exactly what data is missing (Gap)
@@ -192,7 +192,7 @@ Tip: Also store the response in a custom field (optional) for reporting.
 - [ ] Is there a stale timeout to avoid stuck locks?
 - [ ] Do retries have a cap?
 
-## (NEW) Optional: add lock + idempotency for safety
+## Optional: add lock + idempotency for safety
 
 If people can trigger the rule manually (or it can run twice), you can add:
 - **Lock per issue** (store “in-progress” state somewhere)
