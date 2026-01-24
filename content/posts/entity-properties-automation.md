@@ -11,22 +11,10 @@ People click the rule twice. Two admins run it "just to be sure". Or two automat
 
 This article shows production-friendly patterns using Entity Properties as a lightweight state store to implement:
 
-- **Idempotency**: the same operation will not run twice for the same issue
-- **Per-issue locks**: only one execution at a time per issue
-- **Async orchestration**: start an API job now, finish it later safely
-- **Safe retries**: retry only when needed, without duplicating side effects
-
-Entity properties are key/value JSON metadata stored on Jira entities. Automation can write and read them and use them in conditions.
-
 ---
 
-## What are Entity Properties
-Entity properties are JSON blobs stored against Jira entities like issues, projects, and users. In Automation rules, you can:
-
-- Set them via **Set entity property**
-- Read them using smart values like `{{issue.properties.myKey}}`
-
-Think of them as a small state record attached to the issue.
+## What are Rovo Agent
+Rovo Agent is a new feature development of Atlassian, is an artificial intelligence and search in your instance informations, knowledge bases, simillar tickets. Whin this information, he can help you to solve tickets, draw new tasks and add knowledge in your contents.
 
 ---
 
