@@ -6,33 +6,736 @@
     <description>Recent content in Automation on Jira DevCode</description>
     <generator>Hugo -- 0.151.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 13 Jan 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 13 Apr 2026 10:14:47 -0300</lastBuildDate>
     <atom:link href="http://localhost:1313/jira-devcode/tags/automation/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>JQL &#43; JSON: building reliable Jira automations</title>
-      <link>http://localhost:1313/jira-devcode/posts/jql-json-workflows/</link>
-      <pubDate>Tue, 13 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/jira-devcode/posts/jql-json-workflows/</guid>
-      <description>&lt;p&gt;This post is a starting point for Jira DevCode: patterns, gotchas, and reliable automation design.&lt;/p&gt;
-&lt;h2 id=&#34;what-youll-learn&#34;&gt;What you’ll learn&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;JQL patterns that scale&lt;/li&gt;
-&lt;li&gt;Automation rule architecture&lt;/li&gt;
-&lt;li&gt;REST API workflows (safe retries, idempotency)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;example-jql-baseline&#34;&gt;Example: JQL baseline&lt;/h2&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-jql&#34; data-lang=&#34;jql&#34;&gt;project = ABC AND statusCategory != Done ORDER BY created DESC
-&lt;/code&gt;&lt;/pre&gt;</description>
-      <content:encoded><![CDATA[<p>This post is a starting point for Jira DevCode: patterns, gotchas, and reliable automation design.</p>
-<h2 id="what-youll-learn">What you’ll learn</h2>
+      <title>From Triage to RCA: Automating Critical Incident Communication with Jira, Statuspage API, Rovo, and Confluence</title>
+      <link>http://localhost:1313/jira-devcode/posts/from-triage-to-rca/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/posts/from-triage-to-rca/</guid>
+      <description>A practical workflow that connects incident triage, public communication, and RCA generation using Jira, Statuspage API, Rovo, and Confluence.</description>
+      <content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>Critical incidents need more than a fast technical response. They also need clear communication, consistent public updates, and a structured post-incident process. In many teams, these steps still happen in separate ways: triage is done in Jira, customer communication is written manually, and the RCA is created later with little automation.</p>
+<p>In this article, I will present a practical workflow that connects these stages. The process starts with incident triage in Jira, where Rovo can also help support the analysis and identify whether the issue should be treated as a critical, high-priority incident. After that, Jira automation can publish updates automatically to Statuspage through API calls, using Rovo to generate customer-facing messages with sensitive information removed.</p>
+<p>When the incident is resolved, the same flow can update and close the public incident in Statuspage with a final message also supported by Rovo. After that, the process can generate a structured RCA draft in Markdown, ready to be published in Confluence.</p>
+<p>RCA stands for Root Cause Analysis. It is the document used to explain what happened, what the customer impact was, what caused the incident, how the team resolved it, and what actions should be taken to reduce the chance of the same issue happening again.</p>
+<p>The goal is not only to automate tasks, but also to make incident management faster, more reliable, and more repeatable. At the same time, this process helps create better documentation for future consultation, which can also support Rovo in future triage and incident analysis.</p>
+<h2 id="why-this-workflow-matters">Why this workflow matters</h2>
+<p>Incident communication is still a weak point in many teams. In many cases, the investigation happens internally, but external communication is delayed, inconsistent, or too dependent on manual work. This increases the risk of noise, rework, and even the accidental exposure of sensitive information.</p>
+<p>By connecting Jira, Statuspage, Rovo, and Confluence in one workflow, it becomes possible to reduce the time between triage and public communication, standardize the language used in updates, avoid exposing internal details, and make sure the incident learning is recorded in a structured way at the end of the process.</p>
+<h2 id="high-level-architecture">High-level architecture</h2>
+<p>This workflow follows five main steps:</p>
+<ol>
+<li>The incident is triaged in Jira.</li>
+<li>Rovo generates a sanitized external message.</li>
+<li>Jira automation opens the incident in Statuspage through API.</li>
+<li>When the incident is resolved, Jira automation updates and closes the public incident in Statuspage with a Rovo-generated message.</li>
+<li>An RCA page is created automatically in Confluence.</li>
+</ol>
+<h2 id="implementation-model">Implementation model</h2>
+<p>In practice, I recommend implementing this workflow through <strong>three automation rules</strong>:</p>
+<ol>
+<li>
+<p><strong>Creation automation</strong><br>
+Triggered when the incident is created. It performs triage, decides whether public communication is required, generates the first public message, opens the Statuspage incident, and stores the returned Statuspage incident ID.</p>
+</li>
+<li>
+<p><strong>Update automation</strong><br>
+Triggered when the incident is updated. It evaluates the current incident stage, generates a new public update message with Rovo, and updates the existing Statuspage incident with the proper external status.</p>
+</li>
+<li>
+<p><strong>Finalization automation</strong><br>
+Triggered when the incident is resolved. It closes the public incident in Statuspage, generates the RCA content with Rovo, creates the Confluence page through API, and stores the Confluence link back in Jira.</p>
+</li>
+</ol>
+<hr>
+<h2 id="step-1--incident-creation-and-triage-in-jira">Step 1 — Incident creation and triage in Jira</h2>
+<p>The first step of the workflow starts when a new incident is created in Jira Service Management. At this stage, the goal is to classify the incident as early as possible, decide whether it requires public communication, and prepare the data that will be used by the next automation steps.</p>
+<p>To keep the process maintainable, I recommend splitting this step into two logical blocks inside the same creation automation:</p>
 <ul>
-<li>JQL patterns that scale</li>
-<li>Automation rule architecture</li>
-<li>REST API workflows (safe retries, idempotency)</li>
+<li><strong>Rule block 1A — Incident created and triaged</strong></li>
+<li><strong>Rule block 1B — Publish to Statuspage if the incident is critical</strong></li>
 </ul>
-<h2 id="example-jql-baseline">Example: JQL baseline</h2>
-<pre tabindex="0"><code class="language-jql" data-lang="jql">project = ABC AND statusCategory != Done ORDER BY created DESC
-</code></pre>]]></content:encoded>
+<p>Before creating the rules, make sure the following fields already exist in Jira:</p>
+<ul>
+<li><strong>Statuspage Incident ID</strong> — single-line text field</li>
+<li><strong>Public Communication Required</strong> — checkbox or select list</li>
+<li><strong>Incident Severity</strong> — select list</li>
+<li><strong>Incident Criticality</strong> — select list or checkbox</li>
+<li><strong>Sanitized Public Message</strong> — paragraph text field (optional, but useful for auditability)</li>
+<li><strong>Incident Progress Stage</strong> — select list</li>
+<li><strong>RCA Page URL</strong> — URL field</li>
+<li><strong>Last Public Update Message</strong> — paragraph text field (optional)</li>
+</ul>
+<hr>
+<h2 id="rule-block-1a--incident-created-and-triaged">Rule block 1A — Incident created and triaged</h2>
+<p>This part starts when a new incident is created. It runs inside the Jira Service Management project scope and performs the first classification step.</p>
+<h3 id="rule-scope">Rule scope</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Project scope: your Jira Service Management project
+</span></span><span style="display:flex;"><span>Rule type: project rule
+</span></span></code></pre></div><h3 id="trigger">Trigger</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Trigger: Work item created
+</span></span></code></pre></div><h3 id="recommended-conditions">Recommended conditions</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Issue type equals Incident
+</span></span><span style="display:flex;"><span>Summary is not empty
+</span></span><span style="display:flex;"><span>Description is not empty
+</span></span></code></pre></div><h3 id="suggested-flow">Suggested flow</h3>
+<ol>
+<li>Trigger when the incident is created</li>
+<li>Confirm the issue type is Incident</li>
+<li>Use Rovo to classify the incident</li>
+<li>Store the triage output</li>
+<li>Update Jira fields with the classification result</li>
+<li>Decide whether the issue should move to public communication</li>
+</ol>
+<h3 id="suggested-rovo-prompt-for-triage">Suggested Rovo prompt for triage</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>You are helping triage a newly created incident in Jira Service Management.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Your task is to analyze the incident summary and description and classify it for internal incident handling.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Return your answer in valid JSON only.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Rules:
+</span></span><span style="display:flex;"><span>- Do not add explanations outside the JSON.
+</span></span><span style="display:flex;"><span>- Use simple values only.
+</span></span><span style="display:flex;"><span>- If the description is unclear, make the most reasonable classification based on the available information.
+</span></span><span style="display:flex;"><span>- Do not invent technical details that are not present.
+</span></span><span style="display:flex;"><span>- &#34;public_communication_required&#34; must be true only if the issue appears to affect customers, external users, or business-critical services.
+</span></span><span style="display:flex;"><span>- &#34;criticality&#34; must be &#34;critical&#34; only when the incident suggests major business impact, major service degradation, or outage.
+</span></span><span style="display:flex;"><span>- &#34;priority&#34; must be one of: low, medium, high, highest
+</span></span><span style="display:flex;"><span>- &#34;severity&#34; must be one of: sev4, sev3, sev2, sev1
+</span></span><span style="display:flex;"><span>- &#34;progress_stage&#34; must be one of: analyzing, investigating, identified, fixing, preparing_deploy, deploying_fix, validating_fix, monitoring, resolved
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>JSON format:
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  &#34;priority&#34;: &#34;&#34;,
+</span></span><span style="display:flex;"><span>  &#34;severity&#34;: &#34;&#34;,
+</span></span><span style="display:flex;"><span>  &#34;criticality&#34;: &#34;&#34;,
+</span></span><span style="display:flex;"><span>  &#34;public_communication_required&#34;: false,
+</span></span><span style="display:flex;"><span>  &#34;progress_stage&#34;: &#34;&#34;,
+</span></span><span style="display:flex;"><span>  &#34;reason&#34;: &#34;&#34;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Input:
+</span></span><span style="display:flex;"><span>Issue key: {{issue.key}}
+</span></span><span style="display:flex;"><span>Summary: {{issue.summary}}
+</span></span><span style="display:flex;"><span>Description: {{issue.description}}
+</span></span><span style="display:flex;"><span>Reporter: {{issue.reporter.displayName}}
+</span></span><span style="display:flex;"><span>Service: {{issue.customfield_service}}
+</span></span></code></pre></div><h3 id="expected-rovo-output">Expected Rovo output</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;priority&#34;</span>: <span style="color:#e6db74">&#34;highest&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;severity&#34;</span>: <span style="color:#e6db74">&#34;sev1&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;criticality&#34;</span>: <span style="color:#e6db74">&#34;critical&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;public_communication_required&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;progress_stage&#34;</span>: <span style="color:#e6db74">&#34;investigating&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;reason&#34;</span>: <span style="color:#e6db74">&#34;The issue appears to affect a customer-facing service and suggests a major service disruption.&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="store-the-triage-result">Store the triage result</h3>
+<p>After the <strong>Use Rovo</strong> action, store the result in a variable so it can be reused later in the rule.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: triageResult
+</span></span><span style="display:flex;"><span>Smart value:
+</span></span><span style="display:flex;"><span>{{rovo.response}}
+</span></span></code></pre></div><p>If you prefer, you can keep the raw JSON response in an internal comment for easier troubleshooting.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Add internal comment
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Triage result:
+</span></span><span style="display:flex;"><span>{{triageResult}}
+</span></span></code></pre></div><h3 id="update-the-issue-fields">Update the issue fields</h3>
+<p>After the triage output is available, update the issue with the values that will drive the rest of the workflow.</p>
+<p>Example mapping:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Incident Severity              &lt;- sev1 / sev2 / sev3 / sev4
+</span></span><span style="display:flex;"><span>Priority                       &lt;- highest / high / medium / low
+</span></span><span style="display:flex;"><span>Incident Criticality           &lt;- critical / non-critical
+</span></span><span style="display:flex;"><span>Public Communication Required  &lt;- true / false
+</span></span><span style="display:flex;"><span>Incident Progress Stage        &lt;- analyzing / investigating / identified / fixing / preparing_deploy / deploying_fix / validating_fix / monitoring / resolved
+</span></span></code></pre></div><p>If you use advanced field editing, the structure can look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;fields&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;priority&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;Highest&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;customfield_incident_severity&#34;</span>: <span style="color:#e6db74">&#34;sev1&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;customfield_incident_criticality&#34;</span>: <span style="color:#e6db74">&#34;critical&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;customfield_public_communication_required&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;customfield_incident_progress_stage&#34;</span>: <span style="color:#e6db74">&#34;investigating&#34;</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="decision-point">Decision point</h3>
+<p>At the end of Rule block 1A, the issue has already been triaged. The next step is to decide whether it should be published externally.</p>
+<p>Recommended logic:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>If:
+</span></span><span style="display:flex;"><span>- Priority is High or Highest
+</span></span><span style="display:flex;"><span>- Incident Criticality is Critical
+</span></span><span style="display:flex;"><span>- Public Communication Required is true
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Then:
+</span></span><span style="display:flex;"><span>- Continue to public communication flow
+</span></span><span style="display:flex;"><span>Else:
+</span></span><span style="display:flex;"><span>- Stop the rule
+</span></span></code></pre></div><hr>
+<h2 id="rule-block-1b--publish-to-statuspage-if-the-incident-is-critical">Rule block 1B — Publish to Statuspage if the incident is critical</h2>
+<p>Once the incident is classified as high-impact and critical, the second part of the creation automation prepares the external message and opens the public incident in Statuspage.</p>
+<h3 id="trigger-1">Trigger</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Trigger: Work item created
+</span></span></code></pre></div><h3 id="conditions">Conditions</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Issue type equals Incident
+</span></span><span style="display:flex;"><span>Priority equals High or Highest
+</span></span><span style="display:flex;"><span>Incident Criticality equals Critical
+</span></span><span style="display:flex;"><span>Public Communication Required equals true
+</span></span><span style="display:flex;"><span>Statuspage Incident ID is empty
+</span></span></code></pre></div><h3 id="generate-the-public-message-with-rovo">Generate the public message with Rovo</h3>
+<p>At this point, the internal incident details must be transformed into a safe public message.</p>
+<p>Use Rovo with a prompt like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>You are helping write a public Statuspage update for a newly identified critical incident.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Task:
+</span></span><span style="display:flex;"><span>Rewrite the internal incident details into a short, clear, customer-facing message.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Rules:
+</span></span><span style="display:flex;"><span>- Do not mention customer names.
+</span></span><span style="display:flex;"><span>- Do not mention internal ticket IDs, account IDs, internal URLs, hostnames, pod names, region names, stack traces, or IP addresses.
+</span></span><span style="display:flex;"><span>- Do not expose internal team names or escalation details.
+</span></span><span style="display:flex;"><span>- Do not speculate about the root cause.
+</span></span><span style="display:flex;"><span>- Do not assign blame.
+</span></span><span style="display:flex;"><span>- Use calm and professional language.
+</span></span><span style="display:flex;"><span>- Mention only the affected service or customer-facing capability in a generic way.
+</span></span><span style="display:flex;"><span>- Mention that the team is investigating.
+</span></span><span style="display:flex;"><span>- Keep the output between 2 and 4 sentences.
+</span></span><span style="display:flex;"><span>- Output only the final message.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Input:
+</span></span><span style="display:flex;"><span>Issue key: {{issue.key}}
+</span></span><span style="display:flex;"><span>Summary: {{issue.summary}}
+</span></span><span style="display:flex;"><span>Description: {{issue.description}}
+</span></span><span style="display:flex;"><span>Latest internal comment: {{issue.comments.last.body}}
+</span></span><span style="display:flex;"><span>Severity: {{issue.customfield_incident_severity}}
+</span></span><span style="display:flex;"><span>Service: {{issue.customfield_service}}
+</span></span><span style="display:flex;"><span>Progress stage: {{issue.customfield_incident_progress_stage}}
+</span></span></code></pre></div><h3 id="store-the-public-message">Store the public message</h3>
+<p>Store the sanitized response in a variable first.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: publicMessage
+</span></span><span style="display:flex;"><span>Smart value:
+</span></span><span style="display:flex;"><span>{{rovo.response}}
+</span></span></code></pre></div><p>Optionally, also save it into a Jira field for traceability.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Edit issue
+</span></span><span style="display:flex;"><span>Field: Sanitized Public Message
+</span></span><span style="display:flex;"><span>Value: {{publicMessage}}
+</span></span></code></pre></div><h3 id="create-the-statuspage-incident">Create the Statuspage incident</h3>
+<p>Now the rule can call the Statuspage API and open the public incident.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">POST https://api.statuspage.io/v1/pages/{page_id}/incidents
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Authorization: OAuth {STATUSPAGE_API_KEY}
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Content-Type: application/json
+</span></span></span></code></pre></div><h3 id="example-request-body">Example request body</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;incident&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;{{issue.key}} - {{issue.summary}}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;investigating&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;impact_override&#34;</span>: <span style="color:#e6db74">&#34;critical&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;deliver_notifications&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;body&#34;</span>: <span style="color:#e6db74">&#34;{{publicMessage}}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;metadata&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;jira_issue_key&#34;</span>: <span style="color:#e6db74">&#34;{{issue.key}}&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="jira-automation-web-request-configuration">Jira Automation web request configuration</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Send web request
+</span></span><span style="display:flex;"><span>Method: POST
+</span></span><span style="display:flex;"><span>URL: https://api.statuspage.io/v1/pages/{page_id}/incidents
+</span></span><span style="display:flex;"><span>Headers:
+</span></span><span style="display:flex;"><span>  Authorization: OAuth {STATUSPAGE_API_KEY}
+</span></span><span style="display:flex;"><span>  Content-Type: application/json
+</span></span><span style="display:flex;"><span>Web request body: custom data
+</span></span><span style="display:flex;"><span>Wait for response: enabled
+</span></span></code></pre></div><h3 id="save-the-returned-statuspage-incident-id">Save the returned Statuspage incident ID</h3>
+<p>After the API call, Jira Automation can store the response body in a variable and extract the returned incident ID.</p>
+<p>Example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: statuspageIncidentId
+</span></span><span style="display:flex;"><span>Smart value:
+</span></span><span style="display:flex;"><span>{{webResponse.body.id}}
+</span></span></code></pre></div><p>Then write that value back to the Jira issue.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Edit issue
+</span></span><span style="display:flex;"><span>Field: Statuspage Incident ID
+</span></span><span style="display:flex;"><span>Value: {{statuspageIncidentId}}
+</span></span></code></pre></div><p>This step is very important because the same ID will be used later to update and resolve the public incident.</p>
+<h3 id="optional-internal-comment-for-traceability">Optional internal comment for traceability</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Add internal comment
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Statuspage incident created successfully.
+</span></span><span style="display:flex;"><span>Statuspage Incident ID: {{statuspageIncidentId}}
+</span></span><span style="display:flex;"><span>Public message: {{publicMessage}}
+</span></span></code></pre></div><h3 id="summary-of-the-creation-automation">Summary of the creation automation</h3>
+<p>At the end of the first automation, the workflow already does four important things:</p>
+<ol>
+<li>It identifies and triages the incident in Jira.</li>
+<li>It classifies whether the issue requires public communication.</li>
+<li>It generates a sanitized public message with Rovo.</li>
+<li>It opens the public incident in Statuspage and stores the returned incident ID in Jira.</li>
+</ol>
+<p>This creates the foundation for the next automation, where the incident can be updated during the investigation.</p>
+<hr>
+<h2 id="step-2--incident-updates-and-public-progress-communication">Step 2 — Incident updates and public progress communication</h2>
+<p>Once the public incident already exists in Statuspage, the next automation keeps the public timeline updated while the technical investigation continues. This rule is responsible for reacting to meaningful internal progress such as investigation updates, issue identification, workaround progress, deployment preparation, deployment execution, validation, and monitoring.</p>
+<p>The important design principle here is simple: not every internal change should produce a public update. The automation should react only to relevant milestones and translate them into the correct external communication state.</p>
+<h3 id="additional-field-recommendations">Additional field recommendations</h3>
+<p>Before implementing this rule, I recommend the following field strategy:</p>
+<ul>
+<li>
+<p><strong>Incident Progress Stage</strong> — select list<br>
+Suggested values:</p>
+<ul>
+<li>analyzing</li>
+<li>investigating</li>
+<li>identified</li>
+<li>fixing</li>
+<li>preparing_deploy</li>
+<li>deploying_fix</li>
+<li>validating_fix</li>
+<li>monitoring</li>
+<li>resolved</li>
+</ul>
+</li>
+<li>
+<p><strong>Last Public Update Message</strong> — paragraph text field (optional)</p>
+</li>
+<li>
+<p><strong>Last Public Update Timestamp</strong> — date time field (optional)</p>
+</li>
+<li>
+<p><strong>Public Update Required</strong> — checkbox (optional, useful when you want stricter control)</p>
+</li>
+</ul>
+<h3 id="automation-2--update-the-existing-statuspage-incident">Automation 2 — Update the existing Statuspage incident</h3>
+<p>This automation runs when the Jira incident is updated after the initial creation flow.</p>
+<h3 id="rule-scope-1">Rule scope</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Project scope: your Jira Service Management project
+</span></span><span style="display:flex;"><span>Rule type: project rule
+</span></span></code></pre></div><h3 id="trigger-2">Trigger</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Trigger: Work item updated
+</span></span></code></pre></div><h3 id="recommended-trigger-filters">Recommended trigger filters</h3>
+<p>To avoid too many executions, restrict the rule to meaningful changes only. A practical approach is to run it when one of the following changes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Incident Progress Stage changed
+</span></span><span style="display:flex;"><span>Status changed
+</span></span><span style="display:flex;"><span>Fix version changed
+</span></span><span style="display:flex;"><span>Internal comment added
+</span></span><span style="display:flex;"><span>Public Update Required changed to true
+</span></span></code></pre></div><h3 id="recommended-conditions-1">Recommended conditions</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Issue type equals Incident
+</span></span><span style="display:flex;"><span>Statuspage Incident ID is not empty
+</span></span><span style="display:flex;"><span>Public Communication Required equals true
+</span></span><span style="display:flex;"><span>Resolution is empty
+</span></span></code></pre></div><h3 id="loop-protection">Loop protection</h3>
+<p>Because this rule edits the issue and calls external APIs, it is a good idea to add loop protection.</p>
+<p>Recommended options:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Only continue if the actor is not Automation for Jira
+</span></span><span style="display:flex;"><span>OR
+</span></span><span style="display:flex;"><span>Only continue if Incident Progress Stage changed
+</span></span><span style="display:flex;"><span>OR
+</span></span><span style="display:flex;"><span>Only continue if Public Update Required equals true
+</span></span></code></pre></div><h3 id="internal-to-external-status-mapping">Internal-to-external status mapping</h3>
+<p>Statuspage public statuses are usually simpler than the internal operational stages. Because of that, I recommend using a mapping layer inside the automation.</p>
+<p>Suggested mapping:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>analyzing, investigating                  -&gt; investigating
+</span></span><span style="display:flex;"><span>identified, fixing                        -&gt; identified
+</span></span><span style="display:flex;"><span>preparing_deploy, deploying_fix           -&gt; identified
+</span></span><span style="display:flex;"><span>validating_fix, monitoring                -&gt; monitoring
+</span></span><span style="display:flex;"><span>resolved                                  -&gt; handled by the finalization automation
+</span></span></code></pre></div><h3 id="suggested-rule-flow">Suggested rule flow</h3>
+<ol>
+<li>Trigger when the incident is updated</li>
+<li>Confirm that a Statuspage incident already exists</li>
+<li>Read the current Incident Progress Stage</li>
+<li>Map the internal stage to the public Statuspage status</li>
+<li>Use Rovo to generate a customer-facing progress update</li>
+<li>Send a PATCH request to Statuspage</li>
+<li>Store the published message in Jira</li>
+<li>Optionally reset <code>Public Update Required</code> to false</li>
+</ol>
+<h3 id="example-logic-for-status-mapping">Example logic for status mapping</h3>
+<p>You can implement the mapping with <strong>If / else blocks</strong> inside Jira Automation.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>IF Incident Progress Stage is analyzing or investigating
+</span></span><span style="display:flex;"><span>  statuspageStatus = investigating
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ELSE IF Incident Progress Stage is identified or fixing
+</span></span><span style="display:flex;"><span>  statuspageStatus = identified
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ELSE IF Incident Progress Stage is preparing_deploy or deploying_fix
+</span></span><span style="display:flex;"><span>  statuspageStatus = identified
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ELSE IF Incident Progress Stage is validating_fix or monitoring
+</span></span><span style="display:flex;"><span>  statuspageStatus = monitoring
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>ELSE
+</span></span><span style="display:flex;"><span>  Stop the rule
+</span></span></code></pre></div><h3 id="example-variable-creation">Example variable creation</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: statuspageStatus
+</span></span><span style="display:flex;"><span>Value: identified
+</span></span></code></pre></div><p>In a real rule, the value above would be assigned dynamically through branches.</p>
+<h3 id="suggested-rovo-prompt-for-progress-updates">Suggested Rovo prompt for progress updates</h3>
+<p>Once the public status is known, the next step is generating a safe customer-facing message.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>You are helping write a public Statuspage progress update for an active incident.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Task:
+</span></span><span style="display:flex;"><span>Write a short and professional customer-facing update based on the current internal incident stage.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Rules:
+</span></span><span style="display:flex;"><span>- Do not mention customer names.
+</span></span><span style="display:flex;"><span>- Do not mention account IDs, internal ticket IDs, internal URLs, pod names, region names, stack traces, IP addresses, or hostnames.
+</span></span><span style="display:flex;"><span>- Do not expose security-sensitive details.
+</span></span><span style="display:flex;"><span>- Do not speculate about the root cause unless it is already confirmed.
+</span></span><span style="display:flex;"><span>- Use the current progress stage to guide the wording.
+</span></span><span style="display:flex;"><span>- Keep the tone calm and professional.
+</span></span><span style="display:flex;"><span>- Keep the update between 2 and 4 sentences.
+</span></span><span style="display:flex;"><span>- The message must be understandable by external users.
+</span></span><span style="display:flex;"><span>- Output only the final message.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Stage guidance:
+</span></span><span style="display:flex;"><span>- If stage is investigating or analyzing, explain that the team is still investigating.
+</span></span><span style="display:flex;"><span>- If stage is identified, explain that the issue has been identified and the team is working on mitigation.
+</span></span><span style="display:flex;"><span>- If stage is fixing, explain that corrective actions are in progress.
+</span></span><span style="display:flex;"><span>- If stage is preparing_deploy, explain that a fix is being prepared for deployment.
+</span></span><span style="display:flex;"><span>- If stage is deploying_fix, explain that changes are being applied carefully.
+</span></span><span style="display:flex;"><span>- If stage is validating_fix, explain that the team is validating the recovery.
+</span></span><span style="display:flex;"><span>- If stage is monitoring, explain that service is recovering and is being monitored.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Input:
+</span></span><span style="display:flex;"><span>Issue key: {{issue.key}}
+</span></span><span style="display:flex;"><span>Summary: {{issue.summary}}
+</span></span><span style="display:flex;"><span>Description: {{issue.description}}
+</span></span><span style="display:flex;"><span>Current stage: {{issue.customfield_incident_progress_stage}}
+</span></span><span style="display:flex;"><span>Latest internal note: {{issue.comments.last.body}}
+</span></span><span style="display:flex;"><span>Service: {{issue.customfield_service}}
+</span></span><span style="display:flex;"><span>Severity: {{issue.customfield_incident_severity}}
+</span></span></code></pre></div><h3 id="example-generated-outputs">Example generated outputs</h3>
+<p><strong>Example for <code>preparing_deploy</code>:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>We have identified the issue affecting the service and are preparing a corrective change for deployment. Our team is proceeding carefully to restore normal behavior as quickly as possible.
+</span></span></code></pre></div><p><strong>Example for <code>deploying_fix</code>:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>We have identified the issue and are currently applying corrective changes. We are monitoring the deployment process closely before confirming recovery.
+</span></span></code></pre></div><p><strong>Example for <code>validating_fix</code>:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Corrective changes have been applied and our team is now validating service recovery. We will provide another update once validation is complete.
+</span></span></code></pre></div><p><strong>Example for <code>monitoring</code>:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Service behavior has improved and we are currently monitoring the platform closely. We will continue to observe stability before marking the incident as resolved.
+</span></span></code></pre></div><h3 id="store-the-generated-progress-message">Store the generated progress message</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: publicUpdateMessage
+</span></span><span style="display:flex;"><span>Smart value:
+</span></span><span style="display:flex;"><span>{{rovo.response}}
+</span></span></code></pre></div><p>You can also store it in Jira:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Edit issue
+</span></span><span style="display:flex;"><span>Field: Last Public Update Message
+</span></span><span style="display:flex;"><span>Value: {{publicUpdateMessage}}
+</span></span></code></pre></div><h3 id="update-the-incident-in-statuspage">Update the incident in Statuspage</h3>
+<p>Use the Statuspage incident ID stored in Jira to update the existing public incident.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">PATCH https://api.statuspage.io/v1/pages/{page_id}/incidents/{incident_id}
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Authorization: OAuth {STATUSPAGE_API_KEY}
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Content-Type: application/json
+</span></span></span></code></pre></div><h3 id="example-request-body-1">Example request body</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;incident&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;{{statuspageStatus}}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;body&#34;</span>: <span style="color:#e6db74">&#34;{{publicUpdateMessage}}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;deliver_notifications&#34;</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="optional-component-level-update">Optional component-level update</h3>
+<p>If your Statuspage setup uses components, this is also the moment to degrade or improve their public state.</p>
+<p>Example idea:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;incident&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;{{statuspageStatus}}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;body&#34;</span>: <span style="color:#e6db74">&#34;{{publicUpdateMessage}}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;deliver_notifications&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;components&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;component_id_1&#34;</span>: <span style="color:#e6db74">&#34;degraded_performance&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;component_id_2&#34;</span>: <span style="color:#e6db74">&#34;partial_outage&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Use this only if your team has already defined a reliable mapping between Jira services and Statuspage component IDs.</p>
+<h3 id="jira-automation-web-request-configuration-1">Jira Automation web request configuration</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Send web request
+</span></span><span style="display:flex;"><span>Method: PATCH
+</span></span><span style="display:flex;"><span>URL: https://api.statuspage.io/v1/pages/{page_id}/incidents/{{issue.customfield_statuspage_incident_id}}
+</span></span><span style="display:flex;"><span>Headers:
+</span></span><span style="display:flex;"><span>  Authorization: OAuth {STATUSPAGE_API_KEY}
+</span></span><span style="display:flex;"><span>  Content-Type: application/json
+</span></span><span style="display:flex;"><span>Web request body: custom data
+</span></span><span style="display:flex;"><span>Wait for response: enabled
+</span></span></code></pre></div><h3 id="save-update-metadata-back-in-jira">Save update metadata back in Jira</h3>
+<p>After a successful API call, I recommend saving the last published update and timestamp.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Edit issue
+</span></span><span style="display:flex;"><span>Field: Last Public Update Message
+</span></span><span style="display:flex;"><span>Value: {{publicUpdateMessage}}
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Edit issue
+</span></span><span style="display:flex;"><span>Field: Last Public Update Timestamp
+</span></span><span style="display:flex;"><span>Value: {{now}}
+</span></span></code></pre></div><p>If you use a manual checkbox to force updates, reset it after publication.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Edit issue
+</span></span><span style="display:flex;"><span>Field: Public Update Required
+</span></span><span style="display:flex;"><span>Value: false
+</span></span></code></pre></div><h3 id="optional-internal-audit-comment">Optional internal audit comment</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Add internal comment
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Statuspage incident updated successfully.
+</span></span><span style="display:flex;"><span>Statuspage Incident ID: {{issue.customfield_statuspage_incident_id}}
+</span></span><span style="display:flex;"><span>Public status: {{statuspageStatus}}
+</span></span><span style="display:flex;"><span>Published message: {{publicUpdateMessage}}
+</span></span></code></pre></div><h3 id="summary-of-the-update-automation">Summary of the update automation</h3>
+<p>At the end of the second automation, the workflow does three important things:</p>
+<ol>
+<li>It watches the internal progress of the incident.</li>
+<li>It translates internal technical stages into safe external communication.</li>
+<li>It keeps the public Statuspage timeline updated without creating a second incident.</li>
+</ol>
+<p>This makes the public communication flow consistent during the entire active lifecycle of the incident.</p>
+<hr>
+<h2 id="step-3--incident-finalization-rca-generation-and-confluence-publication">Step 3 — Incident finalization, RCA generation, and Confluence publication</h2>
+<p>The final automation begins when the incident is resolved internally. At this moment, the workflow must close the public Statuspage incident, generate the final RCA content, and create the Confluence page that will serve as the post-incident record.</p>
+<p>This is the step that closes the loop from operational response to organizational learning.</p>
+<h3 id="automation-3--finalize-the-incident-and-create-the-rca-page">Automation 3 — Finalize the incident and create the RCA page</h3>
+<h3 id="rule-scope-2">Rule scope</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Project scope: your Jira Service Management project
+</span></span><span style="display:flex;"><span>Rule type: project rule
+</span></span></code></pre></div><h3 id="trigger-3">Trigger</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Trigger: Work item transitioned
+</span></span><span style="display:flex;"><span>From: any active incident status
+</span></span><span style="display:flex;"><span>To: Resolved
+</span></span></code></pre></div><p>An alternative trigger is:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Trigger: Field value changed
+</span></span><span style="display:flex;"><span>Field: Resolution
+</span></span></code></pre></div><h3 id="recommended-conditions-2">Recommended conditions</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Issue type equals Incident
+</span></span><span style="display:flex;"><span>Statuspage Incident ID is not empty
+</span></span><span style="display:flex;"><span>Public Communication Required equals true
+</span></span><span style="display:flex;"><span>RCA Page URL is empty
+</span></span></code></pre></div><h3 id="suggested-flow-1">Suggested flow</h3>
+<ol>
+<li>Trigger when the incident is resolved</li>
+<li>Generate the final customer-facing resolution message with Rovo</li>
+<li>Resolve the incident in Statuspage</li>
+<li>Generate the RCA draft in Markdown with Rovo</li>
+<li>Convert the RCA into Confluence storage format</li>
+<li>Create the Confluence page through API</li>
+<li>Store the Confluence page URL in Jira</li>
+<li>Add an internal audit comment</li>
+</ol>
+<h3 id="generate-the-final-public-resolution-message">Generate the final public resolution message</h3>
+<p>Use Rovo to turn the internal resolution notes into a safe external closure message.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>You are helping write the final public Statuspage update for a resolved incident.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Task:
+</span></span><span style="display:flex;"><span>Write a short, professional customer-facing resolution message.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Rules:
+</span></span><span style="display:flex;"><span>- Do not mention customer names.
+</span></span><span style="display:flex;"><span>- Do not mention account IDs, internal URLs, hostnames, stack traces, IP addresses, database names, secrets, or private infrastructure details.
+</span></span><span style="display:flex;"><span>- Do not expose internal-only workaround steps.
+</span></span><span style="display:flex;"><span>- Do not speculate about the root cause if it is not confirmed.
+</span></span><span style="display:flex;"><span>- Clearly say that the incident has been resolved.
+</span></span><span style="display:flex;"><span>- Briefly summarize the customer-facing impact in generic language.
+</span></span><span style="display:flex;"><span>- Briefly summarize the resolution in safe external language.
+</span></span><span style="display:flex;"><span>- Keep the output between 2 and 4 sentences.
+</span></span><span style="display:flex;"><span>- Output only the final message.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Input:
+</span></span><span style="display:flex;"><span>Issue key: {{issue.key}}
+</span></span><span style="display:flex;"><span>Summary: {{issue.summary}}
+</span></span><span style="display:flex;"><span>Description: {{issue.description}}
+</span></span><span style="display:flex;"><span>Resolution notes: {{issue.comments.last.body}}
+</span></span><span style="display:flex;"><span>Service: {{issue.customfield_service}}
+</span></span><span style="display:flex;"><span>Severity: {{issue.customfield_incident_severity}}
+</span></span></code></pre></div><h3 id="store-the-final-resolution-message">Store the final resolution message</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: finalPublicMessage
+</span></span><span style="display:flex;"><span>Smart value:
+</span></span><span style="display:flex;"><span>{{rovo.response}}
+</span></span></code></pre></div><h3 id="resolve-the-statuspage-incident">Resolve the Statuspage incident</h3>
+<p>Use the same incident ID stored during the creation automation.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">PATCH https://api.statuspage.io/v1/pages/{page_id}/incidents/{incident_id}
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Authorization: OAuth {STATUSPAGE_API_KEY}
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Content-Type: application/json
+</span></span></span></code></pre></div><h3 id="example-request-body-2">Example request body</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;incident&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;resolved&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;body&#34;</span>: <span style="color:#e6db74">&#34;{{finalPublicMessage}}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;deliver_notifications&#34;</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="optional-component-recovery-update">Optional component recovery update</h3>
+<p>If your page uses components, this is the right moment to return them to an operational state.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;incident&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;resolved&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;body&#34;</span>: <span style="color:#e6db74">&#34;{{finalPublicMessage}}&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;deliver_notifications&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;components&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;component_id_1&#34;</span>: <span style="color:#e6db74">&#34;operational&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;component_id_2&#34;</span>: <span style="color:#e6db74">&#34;operational&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="jira-automation-web-request-configuration-2">Jira Automation web request configuration</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Send web request
+</span></span><span style="display:flex;"><span>Method: PATCH
+</span></span><span style="display:flex;"><span>URL: https://api.statuspage.io/v1/pages/{page_id}/incidents/{{issue.customfield_statuspage_incident_id}}
+</span></span><span style="display:flex;"><span>Headers:
+</span></span><span style="display:flex;"><span>  Authorization: OAuth {STATUSPAGE_API_KEY}
+</span></span><span style="display:flex;"><span>  Content-Type: application/json
+</span></span><span style="display:flex;"><span>Web request body: custom data
+</span></span><span style="display:flex;"><span>Wait for response: enabled
+</span></span></code></pre></div><h3 id="generate-the-rca-in-markdown-with-rovo">Generate the RCA in Markdown with Rovo</h3>
+<p>After the public incident is closed, generate the RCA content.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>You are helping generate a technical RCA draft in Markdown for a resolved critical incident.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Task:
+</span></span><span style="display:flex;"><span>Create a structured RCA document in professional English.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Output format:
+</span></span><span style="display:flex;"><span>Use the following sections exactly:
+</span></span><span style="display:flex;"><span># Executive summary
+</span></span><span style="display:flex;"><span># Customer impact
+</span></span><span style="display:flex;"><span># Detection
+</span></span><span style="display:flex;"><span># Timeline
+</span></span><span style="display:flex;"><span># Triage and investigation
+</span></span><span style="display:flex;"><span># Confirmed root cause
+</span></span><span style="display:flex;"><span># Contributing factors
+</span></span><span style="display:flex;"><span># Resolution
+</span></span><span style="display:flex;"><span># Preventive and corrective actions
+</span></span><span style="display:flex;"><span># Follow-up owners and target dates
+</span></span><span style="display:flex;"><span># Lessons learned
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Rules:
+</span></span><span style="display:flex;"><span>- If the root cause is not fully confirmed, write &#34;Root cause still under investigation&#34; instead of inventing one.
+</span></span><span style="display:flex;"><span>- Do not include customer names, account IDs, internal-only URLs, IP addresses, hostnames, credentials, secrets, or security-sensitive data.
+</span></span><span style="display:flex;"><span>- Convert informal internal notes into a professional RCA tone.
+</span></span><span style="display:flex;"><span>- Keep the timeline chronological and objective.
+</span></span><span style="display:flex;"><span>- Use bullet points where useful.
+</span></span><span style="display:flex;"><span>- If owners or dates are not explicitly present in the input, write &#34;To be assigned&#34;.
+</span></span><span style="display:flex;"><span>- Output only the Markdown body.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Input:
+</span></span><span style="display:flex;"><span>Issue key: {{issue.key}}
+</span></span><span style="display:flex;"><span>Summary: {{issue.summary}}
+</span></span><span style="display:flex;"><span>Description: {{issue.description}}
+</span></span><span style="display:flex;"><span>Incident created: {{issue.created}}
+</span></span><span style="display:flex;"><span>Incident resolved: {{issue.resolutiondate}}
+</span></span><span style="display:flex;"><span>Severity: {{issue.customfield_incident_severity}}
+</span></span><span style="display:flex;"><span>Service: {{issue.customfield_service}}
+</span></span><span style="display:flex;"><span>All comments: {{issue.comments}}
+</span></span></code></pre></div><h3 id="store-the-rca-markdown">Store the RCA Markdown</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: rcaMarkdown
+</span></span><span style="display:flex;"><span>Smart value:
+</span></span><span style="display:flex;"><span>{{rovo.response}}
+</span></span></code></pre></div><p>For auditability, you can also write it to an internal comment or a long text custom field.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Add internal comment
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Generated RCA Markdown:
+</span></span><span style="display:flex;"><span>{{rcaMarkdown}}
+</span></span></code></pre></div><h3 id="convert-the-rca-to-confluence-storage-format">Convert the RCA to Confluence storage format</h3>
+<p>Confluence page creation through API works better with storage-format HTML than with raw Markdown. Because of that, I recommend a second Rovo step that converts the Markdown draft into safe Confluence storage body content.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>You are converting an incident RCA written in Markdown into Confluence storage body content.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Task:
+</span></span><span style="display:flex;"><span>Convert the Markdown below into clean HTML that is safe to send as a Confluence storage body.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Rules:
+</span></span><span style="display:flex;"><span>- Use only simple HTML tags such as h1, h2, p, ul, li, strong, em, table, tr, td, th, pre, and code.
+</span></span><span style="display:flex;"><span>- Do not wrap the answer in markdown fences.
+</span></span><span style="display:flex;"><span>- Do not add html, body, or head tags.
+</span></span><span style="display:flex;"><span>- Preserve the RCA section order.
+</span></span><span style="display:flex;"><span>- Preserve bullet points.
+</span></span><span style="display:flex;"><span>- Output only the HTML body.
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Markdown input:
+</span></span><span style="display:flex;"><span>{{rcaMarkdown}}
+</span></span></code></pre></div><h3 id="store-the-confluence-storage-body">Store the Confluence storage body</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: confluenceBody
+</span></span><span style="display:flex;"><span>Smart value:
+</span></span><span style="display:flex;"><span>{{rovo.response}}
+</span></span></code></pre></div><h3 id="create-the-confluence-page">Create the Confluence page</h3>
+<p>Now create the RCA page in Confluence through the REST API.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-http" data-lang="http"><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">POST https://your-domain.atlassian.net/wiki/api/v2/pages
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Authorization: Basic {BASE64_EMAIL_AND_API_TOKEN}
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Accept: application/json
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">Content-Type: application/json
+</span></span></span></code></pre></div><h3 id="example-request-body-3">Example request body</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;spaceId&#34;</span>: <span style="color:#e6db74">&#34;123456&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;status&#34;</span>: <span style="color:#e6db74">&#34;current&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;title&#34;</span>: <span style="color:#e6db74">&#34;RCA - {{issue.key}} - {{issue.summary}}&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;parentId&#34;</span>: <span style="color:#e6db74">&#34;789012&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;body&#34;</span>: {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;representation&#34;</span>: <span style="color:#e6db74">&#34;storage&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;value&#34;</span>: <span style="color:#e6db74">&#34;{{confluenceBody}}&#34;</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="jira-automation-web-request-configuration-3">Jira Automation web request configuration</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Send web request
+</span></span><span style="display:flex;"><span>Method: POST
+</span></span><span style="display:flex;"><span>URL: https://your-domain.atlassian.net/wiki/api/v2/pages
+</span></span><span style="display:flex;"><span>Headers:
+</span></span><span style="display:flex;"><span>  Authorization: Basic {BASE64_EMAIL_AND_API_TOKEN}
+</span></span><span style="display:flex;"><span>  Accept: application/json
+</span></span><span style="display:flex;"><span>  Content-Type: application/json
+</span></span><span style="display:flex;"><span>Web request body: custom data
+</span></span><span style="display:flex;"><span>Wait for response: enabled
+</span></span></code></pre></div><h3 id="save-the-returned-confluence-page-url">Save the returned Confluence page URL</h3>
+<p>Once the page is created, save the returned page link or page ID into the Jira issue.</p>
+<p>Example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: confluencePageId
+</span></span><span style="display:flex;"><span>Smart value:
+</span></span><span style="display:flex;"><span>{{webResponse.body.id}}
+</span></span></code></pre></div><p>Then build a user-friendly URL.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Create variable
+</span></span><span style="display:flex;"><span>Variable name: confluencePageUrl
+</span></span><span style="display:flex;"><span>Smart value:
+</span></span><span style="display:flex;"><span>https://your-domain.atlassian.net/wiki/spaces/YOURSPACE/pages/{{confluencePageId}}
+</span></span></code></pre></div><p>Write it back to the issue:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Edit issue
+</span></span><span style="display:flex;"><span>Field: RCA Page URL
+</span></span><span style="display:flex;"><span>Value: {{confluencePageUrl}}
+</span></span></code></pre></div><h3 id="optional-internal-audit-comment-1">Optional internal audit comment</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Action: Add internal comment
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Incident finalized successfully.
+</span></span><span style="display:flex;"><span>Statuspage Incident ID: {{issue.customfield_statuspage_incident_id}}
+</span></span><span style="display:flex;"><span>Final public message: {{finalPublicMessage}}
+</span></span><span style="display:flex;"><span>RCA page: {{confluencePageUrl}}
+</span></span></code></pre></div><h3 id="summary-of-the-finalization-automation">Summary of the finalization automation</h3>
+<p>At the end of the third automation, the workflow has fully closed the incident lifecycle:</p>
+<ol>
+<li>The public incident has been resolved in Statuspage.</li>
+<li>The final customer-facing closure message has been published.</li>
+<li>The RCA draft has been generated in Markdown.</li>
+<li>The RCA has been converted to Confluence storage content.</li>
+<li>The Confluence page has been created automatically.</li>
+<li>The final documentation link has been stored back in Jira.</li>
+</ol>
+<p>This is the point where the workflow moves from incident response to post-incident learning.</p>
+<hr>
+<h2 id="ai-guardrails-and-sensitive-data-handling">AI guardrails and sensitive data handling</h2>
+<p>The use of AI in this workflow needs clear rules. AI should help rewrite, summarize, and organize information, but it should not invent causes, speculate about impact, or expose sensitive data. Especially in critical incidents, public updates must reflect only confirmed facts.</p>
+<p>For this reason, the use of Rovo should be guided by prompts that reinforce the removal of internal data, neutral language, and the prohibition of unsupported conclusions. The same care applies to the RCA, which can be more detailed but still should avoid restricted or unnecessarily sensitive information.</p>
+<p>A practical policy is:</p>
+<ul>
+<li>AI can rewrite internal notes into customer-safe language.</li>
+<li>AI cannot decide root cause certainty by itself.</li>
+<li>AI cannot expose secrets, identifiers, or infrastructure details.</li>
+<li>AI can structure documentation, but the final RCA should still be reviewed by a responsible incident owner.</li>
+</ul>
+<h2 id="final-thoughts">Final thoughts</h2>
+<p>The value of this workflow is not only automation. The main gain is operational consistency: triage starts communication, communication becomes faster and safer, the public status stays aligned with the internal incident stage, incident closure completes the external communication cycle, and the RCA becomes part of a repeatable learning process.</p>
+<p>By integrating Jira, Statuspage, Rovo, and Confluence, the team stops treating communication and documentation as separate tasks and starts handling critical incidents with more maturity, predictability, and governance.</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

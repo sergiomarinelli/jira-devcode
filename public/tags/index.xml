@@ -6,8 +6,106 @@
     <description>Recent content in Tags on Jira DevCode</description>
     <generator>Hugo -- 0.151.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 14 Jan 2026 00:00:00 -0300</lastBuildDate>
+    <lastBuildDate>Mon, 13 Apr 2026 10:14:47 -0300</lastBuildDate>
     <atom:link href="http://localhost:1313/jira-devcode/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Automation</title>
+      <link>http://localhost:1313/jira-devcode/tags/automation/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/automation/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Confluence</title>
+      <link>http://localhost:1313/jira-devcode/tags/confluence/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/confluence/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Incident Management</title>
+      <link>http://localhost:1313/jira-devcode/tags/incident-management/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/incident-management/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Jira</title>
+      <link>http://localhost:1313/jira-devcode/tags/jira/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/jira/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Jira Service Management</title>
+      <link>http://localhost:1313/jira-devcode/tags/jira-service-management/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/jira-service-management/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Rca</title>
+      <link>http://localhost:1313/jira-devcode/tags/rca/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/rca/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Rovo</title>
+      <link>http://localhost:1313/jira-devcode/tags/rovo/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/rovo/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Statuspage</title>
+      <link>http://localhost:1313/jira-devcode/tags/statuspage/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/statuspage/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Advanced-Branching</title>
+      <link>http://localhost:1313/jira-devcode/tags/advanced-branching/</link>
+      <pubDate>Fri, 20 Feb 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/advanced-branching/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Jira-Automation</title>
+      <link>http://localhost:1313/jira-devcode/tags/jira-automation/</link>
+      <pubDate>Fri, 20 Feb 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/jira-automation/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Jsm</title>
+      <link>http://localhost:1313/jira-devcode/tags/jsm/</link>
+      <pubDate>Fri, 20 Feb 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/jsm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Smart-Values</title>
+      <link>http://localhost:1313/jira-devcode/tags/smart-values/</link>
+      <pubDate>Fri, 20 Feb 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/smart-values/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Watchers</title>
+      <link>http://localhost:1313/jira-devcode/tags/watchers/</link>
+      <pubDate>Fri, 20 Feb 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/watchers/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Support Analyst</title>
+      <link>http://localhost:1313/jira-devcode/tags/support-analyst/</link>
+      <pubDate>Fri, 23 Jan 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/tags/support-analyst/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Entity-Properties</title>
       <link>http://localhost:1313/jira-devcode/tags/entity-properties/</link>
@@ -20,13 +118,6 @@
       <link>http://localhost:1313/jira-devcode/tags/idempotency/</link>
       <pubDate>Wed, 14 Jan 2026 00:00:00 -0300</pubDate>
       <guid>http://localhost:1313/jira-devcode/tags/idempotency/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Jira-Automation</title>
-      <link>http://localhost:1313/jira-devcode/tags/jira-automation/</link>
-      <pubDate>Wed, 14 Jan 2026 00:00:00 -0300</pubDate>
-      <guid>http://localhost:1313/jira-devcode/tags/jira-automation/</guid>
       <description></description>
     </item>
     <item>

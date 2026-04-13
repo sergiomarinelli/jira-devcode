@@ -6,6 +6,28 @@
     <description>Recent content in Categories on Jira DevCode</description>
     <generator>Hugo -- 0.151.2</generator>
     <language>en-us</language>
+    <lastBuildDate>Mon, 13 Apr 2026 10:14:47 -0300</lastBuildDate>
     <atom:link href="http://localhost:1313/jira-devcode/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Atlassian</title>
+      <link>http://localhost:1313/jira-devcode/categories/atlassian/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/categories/atlassian/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Automation</title>
+      <link>http://localhost:1313/jira-devcode/categories/automation/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/categories/automation/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Incident Management</title>
+      <link>http://localhost:1313/jira-devcode/categories/incident-management/</link>
+      <pubDate>Mon, 13 Apr 2026 10:14:47 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/categories/incident-management/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

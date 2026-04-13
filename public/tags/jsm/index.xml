@@ -6,33 +6,62 @@
     <description>Recent content in Jsm on Jira DevCode</description>
     <generator>Hugo -- 0.151.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 13 Jan 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 20 Feb 2026 00:00:00 -0300</lastBuildDate>
     <atom:link href="http://localhost:1313/jira-devcode/tags/jsm/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>JQL &#43; JSON: building reliable Jira automations</title>
-      <link>http://localhost:1313/jira-devcode/posts/jql-json-workflows/</link>
-      <pubDate>Tue, 13 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/jira-devcode/posts/jql-json-workflows/</guid>
-      <description>&lt;p&gt;This post is a starting point for Jira DevCode: patterns, gotchas, and reliable automation design.&lt;/p&gt;
-&lt;h2 id=&#34;what-youll-learn&#34;&gt;What you’ll learn&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;JQL patterns that scale&lt;/li&gt;
-&lt;li&gt;Automation rule architecture&lt;/li&gt;
-&lt;li&gt;REST API workflows (safe retries, idempotency)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;example-jql-baseline&#34;&gt;Example: JQL baseline&lt;/h2&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-jql&#34; data-lang=&#34;jql&#34;&gt;project = ABC AND statusCategory != Done ORDER BY created DESC
-&lt;/code&gt;&lt;/pre&gt;</description>
-      <content:encoded><![CDATA[<p>This post is a starting point for Jira DevCode: patterns, gotchas, and reliable automation design.</p>
-<h2 id="what-youll-learn">What you’ll learn</h2>
+      <title>Advanced Branching in Jira Automation: Why, When, and How to Use It</title>
+      <link>http://localhost:1313/jira-devcode/posts/advanced-branching-jira-automation/</link>
+      <pubDate>Fri, 20 Feb 2026 00:00:00 -0300</pubDate>
+      <guid>http://localhost:1313/jira-devcode/posts/advanced-branching-jira-automation/</guid>
+      <description>&lt;p&gt;If you’re a Jira Administrator, you constantly need to create automations to iterate over lists, arrays, and objects to apply actions in bulk and save time. Most likely, you already use iterations on Issues, looping through subtasks, children, parents, and linked Issues. You can also iterate using Assets objects, and that solved most of the problems. On the other hand, you probably already need an iteration on other properties that were not issues or objects. An example of this is when you need to iterate over watchers or request participants in issues, as you must send an email to everyone.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>If you’re a Jira Administrator, you constantly need to create automations to iterate over lists, arrays, and objects to apply actions in bulk and save time. Most likely, you already use iterations on Issues, looping through subtasks, children, parents, and linked Issues. You can also iterate using Assets objects, and that solved most of the problems. On the other hand, you probably already need an iteration on other properties that were not issues or objects. An example of this is when you need to iterate over watchers or request participants in issues, as you must send an email to everyone.</p>
+<p>For this problem, Jira Automation has a solution: Advanced Branching. This feature can use smart values with lists to iterate and apply actions in bulk. Today, we’ll understand why to use, how to use, and examples of problems resolved using this feature.</p>
+<hr>
+<h2 id="the-problem">The problem</h2>
+<p>In Jira Automation, the intuitive flow, if you want to apply actions in bulk, is AQL (Assets Objects) or a Branch rule / related work items. But, in some cases, you need to iterate over smart values with lists, for example, the issue Watchers. To solve this problem, you can use a feature of Advanced Branching. You define a variable name for the smart value and use it in actions afterward.</p>
+<hr>
+<h2 id="branch-normal-vs-advanced-branching-when-to-use-each-one">Branch normal vs Advanced Branching: when to use each one</h2>
+<p>Branching normal is used in cases of Jira sending you cases defined, examples:</p>
 <ul>
-<li>JQL patterns that scale</li>
-<li>Automation rule architecture</li>
-<li>REST API workflows (safe retries, idempotency)</li>
+<li>For each subtask</li>
+<li>For each issue linked.</li>
+<li>For the parent</li>
+<li>For the issues returned by JQL</li>
 </ul>
-<h2 id="example-jql-baseline">Example: JQL baseline</h2>
-<pre tabindex="0"><code class="language-jql" data-lang="jql">project = ABC AND statusCategory != Done ORDER BY created DESC
-</code></pre>]]></content:encoded>
+<p>Advanced branching is used in cases when you use smart values, and it returns a list, for example:</p>
+<ul>
+<li>Watchers of the issue</li>
+<li>fixVersions</li>
+<li>Organizations of the issue</li>
+</ul>
+<hr>
+<h2 id="how-to-use-advanced-branching-in-practice-step-by-step">How to use Advanced Branching in practice (Step by step)</h2>
+<p>The Advanced Branching feature can be found in Automation for Jira. After choosing a trigger, add Advanced branching and then add your actions inside it. In this case, we’ll use Advanced Branching to iterate a list of watchers and send an email to each one.</p>
+<p>The rule will look like this:</p>
+<ul>
+<li>Branch: <code>{{issue.watchers}}</code> as <code>watcher</code></li>
+<li>Action: Send email → To: <code>{{watcher.emailAddress}}</code></li>
+</ul>
+<p>Note: In Jira Cloud, <code>emailAddress</code> may be hidden due to privacy settings.</p>
+<p>It’s simple, but solves a big problem, because other types of branching can’t iterate these lists.</p>
+<p>You can use in other properties of your Jira Instance, examples:</p>
+<ul>
+<li><code>{{issue.fixVersions}}</code> as <code>version</code></li>
+<li><code>{{issue.organizations}}</code> as <code>org</code></li>
+</ul>
+<hr>
+<h2 id="best-practices-and-common-pitfalls">Best Practices and Common Pitfalls</h2>
+<p>You can follow some best practices to avoid common pitfalls. We will illustrate some of them:</p>
+<ul>
+<li>Variable naming: avoid generic names and collisions with other smart values</li>
+<li>Scope: variable only exists inside the branch</li>
+<li>Empty lists: how to treat with conditions (if, size, isEmpty)</li>
+<li>Deduplication: when the list can repeat users</li>
+<li>Permissions/Privacy: (ex, email may not be exposed)</li>
+</ul>
+<hr>
+<p>#jira #jiraautomation #atlassian #jsm #jiraservicemanagement #automation #smartvalues #advancedbranching</p>
+]]></content:encoded>
     </item>
   </channel>
 </rss>

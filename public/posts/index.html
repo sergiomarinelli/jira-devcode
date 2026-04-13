@@ -158,6 +158,52 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">From Triage to RCA: Automating Critical Incident Communication with Jira, Statuspage API, Rovo, and Confluence
+      <span class="entry-hint" title="Draft">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M160-410v-60h300v60H160Zm0-165v-60h470v60H160Zm0-165v-60h470v60H160Zm360 580v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5T862.09-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
+        </svg>
+      </span>
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Introduction Critical incidents need more than a fast technical response. They also need clear communication, consistent public updates, and a structured post-incident process. In many teams, these steps still happen in separate ways: triage is done in Jira, customer communication is written manually, and the RCA is created later with little automation.
+In this article, I will present a practical workflow that connects these stages. The process starts with incident triage in Jira, where Rovo can also help support the analysis and identify whether the issue should be treated as a critical, high-priority incident. After that, Jira automation can publish updates automatically to Statuspage through API calls, using Rovo to generate customer-facing messages with sensitive information removed.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-04-13 10:14:47 -0300 -03'>April 13, 2026</span>&nbsp;·&nbsp;<span>20 min</span></footer>
+  <a class="entry-link" aria-label="post link to From Triage to RCA: Automating Critical Incident Communication with Jira, Statuspage API, Rovo, and Confluence" href="http://localhost:1313/jira-devcode/posts/from-triage-to-rca/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Advanced Branching in Jira Automation: Why, When, and How to Use It
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>If you’re a Jira Administrator, you constantly need to create automations to iterate over lists, arrays, and objects to apply actions in bulk and save time. Most likely, you already use iterations on Issues, looping through subtasks, children, parents, and linked Issues. You can also iterate using Assets objects, and that solved most of the problems. On the other hand, you probably already need an iteration on other properties that were not issues or objects. An example of this is when you need to iterate over watchers or request participants in issues, as you must send an email to everyone.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-02-20 00:00:00 -0300 -03'>February 20, 2026</span>&nbsp;·&nbsp;<span>3 min</span></footer>
+  <a class="entry-link" aria-label="post link to Advanced Branching in Jira Automation: Why, When, and How to Use It" href="http://localhost:1313/jira-devcode/posts/advanced-branching-jira-automation/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">How Rovo Agent Helps Support Analysts Resolve Tickets Faster
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Slower ticket resolution is a big problem in lots of companies. First, a ticket is received by the Support Analyst team (N1). After that, tickets go to the Development Analyst team, where they do a triage. In the end, the ticket goes back to N1 Support Analyst because the information is incomplete, there are other tickets with the same bug already resolved or in progress, or the company has a knowledge base and the content can solve this ticket without needing a technical team.
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2026-01-23 00:00:00 -0300 -03'>January 23, 2026</span>&nbsp;·&nbsp;<span>5 min</span></footer>
+  <a class="entry-link" aria-label="post link to How Rovo Agent Helps Support Analysts Resolve Tickets Faster" href="http://localhost:1313/jira-devcode/posts/rovo-agent-support-analyst/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">Entity Properties in Jira Automation: Idempotency, Locks, and Wait-for-API Patterns
     </h2>
   </header>
@@ -165,10 +211,10 @@
     <p>Manual triggers plus web requests are a perfect recipe for duplicate executions.
 People click the rule twice. Two admins run it “just to be sure”. Or two automations race and you end up with duplicated comments, repeated API calls, or inconsistent data.
 This article shows production-friendly patterns using Entity Properties as a lightweight state store to implement:
-Idempotency: the same operation will not run twice for the same issue Per-issue locks: only one execution at a time per issue Async orchestration: start an API job now, finish it later safely Safe retries: retry only when needed, without duplicating side effects Entity properties are key/value JSON metadata stored on Jira entities. Automation can write and read them and use them in conditions.
+What are Rovo Agent Rovo Agent is a new feature development of Atlassian, is an artificial intelligence and search in your instance informations, knowledge bases, simillar tickets. Whin this information, he can help you to solve tickets, draw new tasks and add knowledge in your contents.
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2026-01-14 00:00:00 -0300 -03'>January 14, 2026</span>&nbsp;·&nbsp;<span>5 min</span></footer>
+  <footer class="entry-footer"><span title='2026-01-14 00:00:00 -0300 -03'>January 14, 2026</span>&nbsp;·&nbsp;<span>4 min</span></footer>
   <a class="entry-link" aria-label="post link to Entity Properties in Jira Automation: Idempotency, Locks, and Wait-for-API Patterns" href="http://localhost:1313/jira-devcode/posts/entity-properties-automation/"></a>
 </article>
     </main>
