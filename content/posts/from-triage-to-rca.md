@@ -84,7 +84,8 @@ This implementation is based on three automation rules:
    - The Jira incident is resolved.
    - Jira Automation closes the Statuspage incident with a final public message.
    - Rovo generates the RCA draft.
-   - Jira Automation creates a Confluence page natively and stores the page link back in Jira.
+   - Jira Automation publishes a new Confluence page with the RCA content.
+   - The page link is stored back in Jira.
 
 ---
 
@@ -665,9 +666,9 @@ This keeps the public timeline clean and avoids over-communication.
 
 ---
 
-# Automation 3 — Incident resolution and RCA registration
+# Automation 3 — Incident resolution and RCA publication
 
-This automation closes the public communication loop and prepares the final incident documentation.
+This automation closes the public communication loop and publishes the final incident documentation.
 
 It is responsible for:
 
@@ -675,7 +676,7 @@ It is responsible for:
 - resolving the Statuspage incident
 - generating the RCA draft with Rovo
 - storing the RCA draft in Jira
-- creating a Confluence page natively
+- publishing a new Confluence page with the RCA content
 - saving the Confluence page URL back in Jira
 
 ---
@@ -797,10 +798,13 @@ Once the public incident is closed, the workflow can generate the RCA draft.
 ### Rovo prompt for RCA generation
 
 ```text
-You are helping generate an RCA draft for a resolved critical incident.
+You are helping generate the final RCA content for a resolved critical incident.
 
 Task:
 Create a structured RCA draft in professional English.
+
+Audience:
+Internal engineering, support, operations, and service management teams.
 
 Output format:
 Use the following sections exactly:
@@ -812,16 +816,19 @@ Use the following sections exactly:
 5. Root cause
 6. Contributing factors
 7. Resolution
-8. Preventive and corrective actions
-9. Lessons learned
-10. Follow-up actions
+8. Corrective actions
+9. Preventive actions
+10. Lessons learned
+11. Follow-up items
 
 Rules:
-- If the root cause is not fully confirmed, explicitly say that it is still under investigation.
-- Do not include customer names, account IDs, IP addresses, internal URLs, credentials, secrets, or private infrastructure identifiers.
-- Use a clear and objective tone.
-- Keep the timeline chronological.
-- Convert action items into bullet points.
+- Write in a clear and direct way.
+- Keep the tone technical and blameless.
+- If the root cause is not fully confirmed, say: Root cause is still under investigation.
+- Do not include customer names, account IDs, credentials, secrets, internal URLs, IP addresses, or sensitive infrastructure details.
+- In Corrective actions, explain what was done to restore the service.
+- In Preventive actions, explain what should be changed to reduce the chance of the same incident happening again.
+- In Follow-up items, use bullet points and include owner or next step when possible.
 - Output only the RCA draft.
 
 Input:
@@ -830,7 +837,7 @@ Summary: {{issue.summary}}
 Description: {{issue.description}}
 Created date: {{issue.created}}
 Resolved date: {{issue.resolutiondate}}
-Latest internal comments: {{issue.comments}}
+All comments: {{issue.comments}}
 Resolution notes: {{issue.comments.last.body}}
 Severity: {{issue.customfield_incident_severity}}
 Service: {{issue.customfield_service}}
@@ -865,25 +872,43 @@ RCA draft generated successfully.
 
 ---
 
-## Create the Confluence page natively
+## Publish the RCA page in Confluence
 
-At this point, Jira Automation can create the Confluence page using the native **Create Confluence page** action.
+At this point, Jira Automation can publish the RCA page directly in Confluence using the **Publish new page in Confluence** action.
 
-This is the cleanest approach when the main goal is to create the page and keep the process native inside Atlassian Automation.
+This is a clean approach because the rule can create the page and publish the RCA content in the same step. In this case, Rovo generates the RCA text and the automation sends that result to the **Page content** field.
 
 ### Jira Automation action
 
 ```text
-Action: Create Confluence page
-Site: your connected Confluence site
-Space: your target RCA space
-Parent page: optional
-Content type: page
-Title:
+Action: Publish new page in Confluence
+Publish a new page in: your target RCA space
+Parent: optional
+Enter page title:
 RCA - {{issue.key}} - {{issue.summary}}
+Page content:
+{{rcaDraft}}
 ```
 
-### Available smart values after page creation
+### Important note about rich text editing
+
+If your automation editor is using rich text mode, wrap the smart value in inline code or a code snippet so the value is rendered correctly when the rule runs.
+
+Example:
+
+```text
+`{{rcaDraft}}`
+```
+
+or
+
+````text
+```
+{{rcaDraft}}
+```
+````
+
+### Available smart values after page publication
 
 ```text
 {{createdPage.title}}
@@ -903,25 +928,10 @@ Value: {{createdPage.url}}
 ```text
 Action: Add internal comment
 
-Confluence RCA page created successfully.
+Confluence RCA page published successfully.
 Page title: {{createdPage.title}}
 Page URL: {{createdPage.url}}
 ```
-
----
-
-## Important note about the native Confluence action
-
-The native **Create Confluence page** action is the best option when you want to create the page without an extra API call. However, it does not let you populate the full page body during creation.
-
-Because of that, this version of the flow works like this:
-
-- Rovo generates the RCA draft
-- Jira stores the RCA draft
-- Jira Automation creates the destination page in Confluence
-- the team can review and move the draft content into the final page
-
-If you need the Confluence page body to be filled automatically at creation time, that becomes an advanced variant and usually requires the Confluence API instead of the native action.
 
 ---
 
@@ -937,7 +947,8 @@ Before moving this solution to production, validate the following points:
 - [ ] Statuspage API credentials are stored securely.
 - [ ] Public lifecycle stages are standardized.
 - [ ] RCA generation works even when the root cause is not fully confirmed.
-- [ ] The Confluence page is created in the correct space.
+- [ ] The Confluence page is published in the correct space.
+- [ ] The Confluence editor is handling the smart value correctly in the Page content field.
 
 ---
 
