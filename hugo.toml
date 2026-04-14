@@ -29,7 +29,7 @@ defaultContentLanguageInSubdir = false
 
 [params.label]
   text = "Jira DevCode"
-  icon = "/logo.svg"
+  icon = ""
   iconHeight = 28
 
 [[params.socialIcons]]
