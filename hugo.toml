@@ -1,16 +1,17 @@
 baseURL = "https://sergiomarinelli.github.io/jira-devcode/"
-languageCode = "en-us"
 title = "Jira DevCode"
 theme = "PaperMod"
 enableRobotsTXT = true
 canonifyURLs = true
+
+defaultContentLanguage = "en"
+defaultContentLanguageInSubdir = false
 
 [pagination]
   pagerSize = 10
 
 [params]
   env = "production"
-  description = "Dev notes sobre Jira Cloud/JSM, automations, JQL, APIs e integrações."
   defaultTheme = "auto"
 
   ShowReadingTime = true
@@ -22,31 +23,6 @@ canonifyURLs = true
   ShowRssButtonInSectionTermList = true
   ShowFullTextinRSS = true
 
-[params.profileMode]
-  enabled = true
-  title = "Jira DevCode"
-  subtitle = "Automation patterns • JQL • REST APIs • Jira Cloud/JSM by Sérgio Marinelli"
-  imageUrl = "https://sergiomarinelli.github.io/jira-devcode/img/avatar.png"
-  imageTitle = "Jira DevCode"
-  imageWidth = 140
-  imageHeight = 140
-
-  [[params.profileMode.buttons]]
-    name = "Posts"
-    url = "/posts/"
-
-  [[params.profileMode.buttons]]
-    name = "About"
-    url = "/about/"
-
-[[params.socialIcons]]
-  name = "github"
-  url = "https://github.com/sergiomarinelli"
-
-[[params.socialIcons]]
-  name = "linkedin"
-  url = "https://www.linkedin.com/in/s%C3%A9rgio-gabriel-marinelli-59b3a5209/"
-
 [params.assets]
   favicon = "/favicon.svg"
   disableFingerprinting = true
@@ -56,13 +32,84 @@ canonifyURLs = true
   icon = "/logo.svg"
   iconHeight = 28
 
-[menu]
-  [[menu.main]]
-    name = "Posts"
-    url = "/jira-devcode/posts/"
-    weight = 10
+[[params.socialIcons]]
+  name = "github"
+  url = "https://github.com/sergiomarinelli"
 
-  [[menu.main]]
-    name = "About"
-    url = "/jira-devcode/about/"
-    weight = 20
+[[params.socialIcons]]
+  name = "linkedin"
+  url = "https://www.linkedin.com/in/s%C3%A9rgio-gabriel-marinelli-59b3a5209/"
+
+[languages]
+
+  [languages.en]
+    languageCode = "en-US"
+    languageName = "English"
+    weight = 1
+    title = "Jira DevCode"
+
+    [languages.en.params]
+      description = "Dev notes about Jira Cloud/JSM, automations, JQL, APIs, and integrations."
+
+    [languages.en.params.profileMode]
+      enabled = true
+      title = "Jira DevCode"
+      subtitle = "Automation patterns • JQL • REST APIs • Jira Cloud/JSM by Sérgio Marinelli"
+      imageUrl = "https://sergiomarinelli.github.io/jira-devcode/img/avatar.png"
+      imageTitle = "Jira DevCode"
+      imageWidth = 140
+      imageHeight = 140
+
+    [[languages.en.params.profileMode.buttons]]
+      name = "Posts"
+      url = "/posts/"
+
+    [[languages.en.params.profileMode.buttons]]
+      name = "About"
+      url = "/about/"
+
+    [[languages.en.menu.main]]
+      name = "Posts"
+      pageRef = "/posts"
+      weight = 10
+
+    [[languages.en.menu.main]]
+      name = "About"
+      pageRef = "/about"
+      weight = 20
+
+  [languages.pt-br]
+    languageCode = "pt-BR"
+    languageName = "Português"
+    weight = 2
+    title = "Jira DevCode"
+
+    [languages.pt-br.params]
+      description = "Notas e conteúdo sobre Jira Cloud/JSM, automações, JQL, APIs e integrações."
+
+    [languages.pt-br.params.profileMode]
+      enabled = true
+      title = "Jira DevCode"
+      subtitle = "Padrões de automação • JQL • REST APIs • Jira Cloud/JSM por Sérgio Marinelli"
+      imageUrl = "https://sergiomarinelli.github.io/jira-devcode/img/avatar.png"
+      imageTitle = "Jira DevCode"
+      imageWidth = 140
+      imageHeight = 140
+
+    [[languages.pt-br.params.profileMode.buttons]]
+      name = "Posts"
+      url = "/pt-br/posts/"
+
+    [[languages.pt-br.params.profileMode.buttons]]
+      name = "Sobre"
+      url = "/pt-br/about/"
+
+    [[languages.pt-br.menu.main]]
+      name = "Posts"
+      pageRef = "/posts"
+      weight = 10
+
+    [[languages.pt-br.menu.main]]
+      name = "Sobre"
+      pageRef = "/about"
+      weight = 20

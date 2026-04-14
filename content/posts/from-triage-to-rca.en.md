@@ -3,6 +3,7 @@ date = '2026-04-13T10:14:47-03:00'
 draft = false
 title = 'From Triage to RCA: Automating Critical Incident Communication with Jira, Statuspage API, Rovo, and Confluence'
 description = 'A practical workflow for triaging critical incidents, publishing sanitized public updates, and generating RCA documentation with Jira, Statuspage API, Rovo, and Confluence.'
+translationKey = 'from-triage-to-rca'
 tags = ['jira', 'jira service management', 'statuspage', 'rovo', 'confluence', 'incident management', 'automation', 'rca']
 categories = ['Atlassian', 'Automation', 'Incident Management']
 +++

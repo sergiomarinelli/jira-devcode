@@ -1,98 +1,18 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <url>
-    <loc>http://localhost:1313/jira-devcode/categories/atlassian/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/categories/automation/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/automation/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/categories/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/confluence/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/posts/from-triage-to-rca/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/categories/incident-management/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/incident-management/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/jira/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/jira-service-management/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/posts/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/rca/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/rovo/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/statuspage/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/</loc>
-    <lastmod>2026-04-13T10:14:47-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/posts/advanced-branching-jira-automation/</loc>
-    <lastmod>2026-02-20T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/advanced-branching/</loc>
-    <lastmod>2026-02-20T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/jira-automation/</loc>
-    <lastmod>2026-02-20T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/jsm/</loc>
-    <lastmod>2026-02-20T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/smart-values/</loc>
-    <lastmod>2026-02-20T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/watchers/</loc>
-    <lastmod>2026-02-20T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/posts/rovo-agent-support-analyst/</loc>
-    <lastmod>2026-01-23T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/support-analyst/</loc>
-    <lastmod>2026-01-23T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/posts/entity-properties-automation/</loc>
-    <lastmod>2026-01-14T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/entity-properties/</loc>
-    <lastmod>2026-01-14T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/idempotency/</loc>
-    <lastmod>2026-01-14T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/locks/</loc>
-    <lastmod>2026-01-14T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/patterns/</loc>
-    <lastmod>2026-01-14T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/tags/rest-api/</loc>
-    <lastmod>2026-01-14T00:00:00-03:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/jira-devcode/about/</loc>
-    <lastmod>2026-01-13T23:08:31-03:00</lastmod>
-  </url>
-</urlset>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <sitemap>
+    <loc>http://localhost:1313/jira-devcode/en/sitemap.xml</loc>
+    
+      <lastmod>2026-04-13T10:14:47-03:00</lastmod>
+    
+  </sitemap>
+  
+  <sitemap>
+    <loc>http://localhost:1313/jira-devcode/pt-br/sitemap.xml</loc>
+    
+      <lastmod>2026-04-13T10:14:47-03:00</lastmod>
+    
+  </sitemap>
+  
+</sitemapindex>

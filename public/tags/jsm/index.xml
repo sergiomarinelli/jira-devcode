@@ -5,7 +5,7 @@
     <link>http://localhost:1313/jira-devcode/tags/jsm/</link>
     <description>Recent content in Jsm on Jira DevCode</description>
     <generator>Hugo -- 0.151.2</generator>
-    <language>en-us</language>
+    <language>en-US</language>
     <lastBuildDate>Fri, 20 Feb 2026 00:00:00 -0300</lastBuildDate>
     <atom:link href="http://localhost:1313/jira-devcode/tags/jsm/index.xml" rel="self" type="application/rss+xml" />
     <item>
@@ -13,53 +13,117 @@
       <link>http://localhost:1313/jira-devcode/posts/advanced-branching-jira-automation/</link>
       <pubDate>Fri, 20 Feb 2026 00:00:00 -0300</pubDate>
       <guid>http://localhost:1313/jira-devcode/posts/advanced-branching-jira-automation/</guid>
-      <description>&lt;p&gt;If you’re a Jira Administrator, you constantly need to create automations to iterate over lists, arrays, and objects to apply actions in bulk and save time. Most likely, you already use iterations on Issues, looping through subtasks, children, parents, and linked Issues. You can also iterate using Assets objects, and that solved most of the problems. On the other hand, you probably already need an iteration on other properties that were not issues or objects. An example of this is when you need to iterate over watchers or request participants in issues, as you must send an email to everyone.&lt;/p&gt;</description>
-      <content:encoded><![CDATA[<p>If you’re a Jira Administrator, you constantly need to create automations to iterate over lists, arrays, and objects to apply actions in bulk and save time. Most likely, you already use iterations on Issues, looping through subtasks, children, parents, and linked Issues. You can also iterate using Assets objects, and that solved most of the problems. On the other hand, you probably already need an iteration on other properties that were not issues or objects. An example of this is when you need to iterate over watchers or request participants in issues, as you must send an email to everyone.</p>
-<p>For this problem, Jira Automation has a solution: Advanced Branching. This feature can use smart values with lists to iterate and apply actions in bulk. Today, we’ll understand why to use, how to use, and examples of problems resolved using this feature.</p>
+      <description>&lt;p&gt;If you work with Jira Automation often, you probably already use loops in different ways.&lt;/p&gt;
+&lt;p&gt;Most of the time, that means iterating through issues: subtasks, linked issues, parents, children, or even results returned by JQL. In other cases, Assets objects can also help solve bulk actions.&lt;/p&gt;
+&lt;p&gt;But sooner or later, you run into a different kind of problem: you need to iterate over something that is not an issue and not an Assets object.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>If you work with Jira Automation often, you probably already use loops in different ways.</p>
+<p>Most of the time, that means iterating through issues: subtasks, linked issues, parents, children, or even results returned by JQL. In other cases, Assets objects can also help solve bulk actions.</p>
+<p>But sooner or later, you run into a different kind of problem: you need to iterate over something that is not an issue and not an Assets object.</p>
+<p>A common example is when you need to work with watchers, request participants, fixVersions, or organizations. In those cases, the normal branching options are not enough.</p>
+<p>That is where <strong>Advanced Branching</strong> becomes useful.</p>
+<p>It allows Jira Automation to iterate over smart values that return lists, so you can apply actions to each item in that list.</p>
+<p>In this article, I will show what problem it solves, when it makes more sense than normal branching, and how to use it in practice.</p>
 <hr>
 <h2 id="the-problem">The problem</h2>
-<p>In Jira Automation, the intuitive flow, if you want to apply actions in bulk, is AQL (Assets Objects) or a Branch rule / related work items. But, in some cases, you need to iterate over smart values with lists, for example, the issue Watchers. To solve this problem, you can use a feature of Advanced Branching. You define a variable name for the smart value and use it in actions afterward.</p>
+<p>In Jira Automation, the most common options for bulk actions are:</p>
+<ul>
+<li>branching over related issues</li>
+<li>iterating over JQL results</li>
+<li>working with Assets objects through AQL</li>
+</ul>
+<p>Those options solve a lot of real cases.</p>
+<p>However, there are situations where the data you want to iterate over is not an issue collection. Instead, it comes from a smart value that returns a list.</p>
+<p>For example:</p>
+<ul>
+<li>watchers of an issue</li>
+<li>fixVersions</li>
+<li>organizations in Jira Service Management</li>
+<li>request participants</li>
+</ul>
+<p>In those cases, <strong>Advanced Branching</strong> is the right tool.</p>
+<p>It lets you define a smart value as the source list, assign a variable name to each item, and then use that variable inside the branch actions.</p>
 <hr>
-<h2 id="branch-normal-vs-advanced-branching-when-to-use-each-one">Branch normal vs Advanced Branching: when to use each one</h2>
-<p>Branching normal is used in cases of Jira sending you cases defined, examples:</p>
+<h2 id="normal-branching-vs-advanced-branching">Normal branching vs Advanced Branching</h2>
+<p>At first glance, both features may look similar, but they are meant for different scenarios.</p>
+<h3 id="use-normal-branching-when-jira-already-gives-you-a-defined-issue-context">Use normal branching when Jira already gives you a defined issue context</h3>
+<p>Typical examples:</p>
 <ul>
 <li>For each subtask</li>
-<li>For each issue linked.</li>
-<li>For the parent</li>
-<li>For the issues returned by JQL</li>
+<li>For linked issues</li>
+<li>For the parent issue</li>
+<li>For issues returned by JQL</li>
 </ul>
-<p>Advanced branching is used in cases when you use smart values, and it returns a list, for example:</p>
+<p>This works well when Jira is already dealing with issues as the main entities.</p>
+<h3 id="use-advanced-branching-when-the-source-is-a-smart-value-list">Use Advanced Branching when the source is a smart value list</h3>
+<p>Typical examples:</p>
 <ul>
-<li>Watchers of the issue</li>
-<li>fixVersions</li>
-<li>Organizations of the issue</li>
+<li><code>{{issue.watchers}}</code></li>
+<li><code>{{issue.fixVersions}}</code></li>
+<li><code>{{issue.organizations}}</code></li>
 </ul>
+<p>This is the main difference: <strong>Advanced Branching is not about issue relationships. It is about iterating over list-based smart values.</strong></p>
 <hr>
-<h2 id="how-to-use-advanced-branching-in-practice-step-by-step">How to use Advanced Branching in practice (Step by step)</h2>
-<p>The Advanced Branching feature can be found in Automation for Jira. After choosing a trigger, add Advanced branching and then add your actions inside it. In this case, we’ll use Advanced Branching to iterate a list of watchers and send an email to each one.</p>
-<p>The rule will look like this:</p>
-<ul>
-<li>Branch: <code>{{issue.watchers}}</code> as <code>watcher</code></li>
-<li>Action: Send email → To: <code>{{watcher.emailAddress}}</code></li>
-</ul>
-<p>Note: In Jira Cloud, <code>emailAddress</code> may be hidden due to privacy settings.</p>
-<p>It’s simple, but solves a big problem, because other types of branching can’t iterate these lists.</p>
-<p>You can use in other properties of your Jira Instance, examples:</p>
-<ul>
-<li><code>{{issue.fixVersions}}</code> as <code>version</code></li>
-<li><code>{{issue.organizations}}</code> as <code>org</code></li>
-</ul>
+<h2 id="how-to-use-advanced-branching-in-practice">How to use Advanced Branching in practice</h2>
+<p>You can find <strong>Advanced Branching</strong> inside Jira Automation when building a rule.</p>
+<p>After choosing your trigger, add an <strong>Advanced Branching</strong> component and place your actions inside it.</p>
+<p>In this example, the goal is to iterate over the watchers of an issue and send an email to each one.</p>
+<h3 id="rule-structure">Rule structure</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Branch: {{issue.watchers}} as watcher
+</span></span><span style="display:flex;"><span>Action: Send email
+</span></span><span style="display:flex;"><span>To: {{watcher.emailAddress}}
+</span></span></code></pre></div><p>This is a simple example, but it solves a problem that normal branching cannot solve directly.</p>
+<h3 id="important-note">Important note</h3>
+<p>In Jira Cloud, <code>emailAddress</code> may be hidden depending on privacy settings and user visibility rules.</p>
+<p>So even though the logic is valid, the result may depend on how your environment handles personal data.</p>
 <hr>
-<h2 id="best-practices-and-common-pitfalls">Best Practices and Common Pitfalls</h2>
-<p>You can follow some best practices to avoid common pitfalls. We will illustrate some of them:</p>
-<ul>
-<li>Variable naming: avoid generic names and collisions with other smart values</li>
-<li>Scope: variable only exists inside the branch</li>
-<li>Empty lists: how to treat with conditions (if, size, isEmpty)</li>
-<li>Deduplication: when the list can repeat users</li>
-<li>Permissions/Privacy: (ex, email may not be exposed)</li>
-</ul>
+<h2 id="more-examples">More examples</h2>
+<p>The same pattern can be used in other lists returned by smart values.</p>
+<h3 id="iterating-over-fixversions">Iterating over fixVersions</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Branch: {{issue.fixVersions}} as version
+</span></span></code></pre></div><p>Then inside the branch, you can use values such as:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>{{version.name}}
+</span></span></code></pre></div><h3 id="iterating-over-organizations">Iterating over organizations</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Branch: {{issue.organizations}} as org
+</span></span></code></pre></div><p>Inside the branch, you can use the current item variable in the actions that follow.</p>
+<p>This is what makes Advanced Branching so useful: once you understand the pattern, you can reuse it in many different scenarios.</p>
 <hr>
+<h2 id="best-practices-and-common-pitfalls">Best practices and common pitfalls</h2>
+<p>Like many Jira Automation features, Advanced Branching is simple once you understand it, but there are still some things worth paying attention to.</p>
+<h3 id="1-use-clear-variable-names">1. Use clear variable names</h3>
+<p>Avoid very generic variable names.</p>
+<p>Better:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>{{issue.watchers}} as watcher
+</span></span><span style="display:flex;"><span>{{issue.fixVersions}} as version
+</span></span></code></pre></div><p>Worse:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>{{issue.watchers}} as item
+</span></span></code></pre></div><p>A clear variable name makes the rule easier to read and maintain.</p>
+<h3 id="2-remember-the-variable-scope">2. Remember the variable scope</h3>
+<p>The variable created in Advanced Branching only exists inside that branch.</p>
+<p>That means you cannot define <code>watcher</code> inside the branch and expect to use it later outside of it.</p>
+<h3 id="3-handle-empty-lists">3. Handle empty lists</h3>
+<p>If the list is empty, the branch will simply not iterate.</p>
+<p>That is usually fine, but in some cases you may want to check whether the list exists or has values before continuing.</p>
+<h3 id="4-watch-for-duplicates">4. Watch for duplicates</h3>
+<p>Depending on the list source, repeated values may appear.</p>
+<p>If that matters for your use case, think about how to prevent duplicate actions.</p>
+<h3 id="5-check-permissions-and-privacy">5. Check permissions and privacy</h3>
+<p>This is especially important when dealing with users and email addresses.</p>
+<p>The smart value may exist, but the data may still not be available in practice because of privacy controls.</p>
+<hr>
+<h2 id="why-this-matters">Why this matters</h2>
+<p>Advanced Branching is one of those Jira Automation features that is easy to ignore at first, but very useful once you understand what it solves.</p>
+<p>It helps fill a gap between issue-based branching and list-based smart values.</p>
+<p>That makes it a practical solution for scenarios where the data you need is already available in Jira, but not in a form that normal branching can use directly.</p>
+<hr>
+<h2 id="final-thoughts">Final thoughts</h2>
+<p>If you already work with Jira Automation, Advanced Branching is worth learning.</p>
+<p>It is simple, practical, and solves a type of problem that appears quite often once you start building more advanced rules.</p>
+<p>The key idea is this:</p>
+<ul>
+<li>use normal branching for issue relationships</li>
+<li>use Advanced Branching for smart value lists</li>
+</ul>
+<p>Once that difference becomes clear, the feature becomes much easier to apply.</p>
 <p>#jira #jiraautomation #atlassian #jsm #jiraservicemanagement #automation #smartvalues #advancedbranching</p>
 ]]></content:encoded>
     </item>
